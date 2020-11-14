@@ -1,6 +1,5 @@
 package homework4;
 
-import com.amazonaws.regions.Regions;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
