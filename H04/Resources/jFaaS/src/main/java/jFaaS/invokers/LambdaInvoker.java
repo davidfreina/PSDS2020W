@@ -41,7 +41,7 @@ public class LambdaInvoker implements FaaSInvoker {
         clientConfiguration.setMaxConnections(10000);
 
         this.lambda = AWSLambdaClientBuilder.standard().withRegion(region)
-                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+//                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                 .withClientConfiguration(clientConfiguration)
                 .build();
     }
