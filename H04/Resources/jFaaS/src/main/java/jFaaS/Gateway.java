@@ -1,5 +1,6 @@
 package jFaaS;
 
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.google.gson.JsonObject;
 import jFaaS.invokers.FaaSInvoker;
@@ -37,9 +38,9 @@ public class Gateway implements FaaSInvoker {
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream(credentialsFile));
-            if (properties.containsKey("aws_access_key") && properties.containsKey("aws_secret_key")){
-                awsAccessKey = properties.getProperty("aws_access_key");
-                awsSecretKey = properties.getProperty("aws_secret_key");
+            if (properties.containsKey("aws_access_key_id") && properties.containsKey("aws_secret_access_key")){
+                awsAccessKey = properties.getProperty("aws_access_key_id");
+                awsSecretKey = properties.getProperty("aws_secret_access_key");
             }
             if (properties.containsKey("ibm_api_key")){
                 openWhiskKey = properties.getProperty("ibm_api_key");
@@ -55,6 +56,8 @@ public class Gateway implements FaaSInvoker {
      * Gateway.
      */
     public Gateway(){
+        awsAccessKey = new ProfileCredentialsProvider().getCredentials().getAWSAccessKeyId();
+        awsSecretKey = new ProfileCredentialsProvider().getCredentials().getAWSSecretKey();
         httpGETInvoker = new HTTPGETInvoker();
     }
 
