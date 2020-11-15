@@ -12,8 +12,8 @@ import java.util.logging.Logger;
 public class LambdaFibonacciInvoker {
 
     private static final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-    private static final String LAMBDA_FUNCTION_128MB = "arn:aws:lambda:us-east-1:722672042190:function:LambdaFibonacci128MB";
-    private static final String LAMBDA_FUNCTION_2GB = "arn:aws:lambda:us-east-1:722672042190:function:LambdaFibonacci2GB";
+    private static final String LAMBDA_FUNCTION_128MB = "arn:aws:lambda:us-east-1:778033607199:function:LambdaFibonacci128MB";
+    private static final String LAMBDA_FUNCTION_2GB = "arn:aws:lambda:us-east-1:778033607199:function:LambdaFibonacci2GB";
     private static final String INPUT_FILE = "input.json";
     private static final int ITERATIONS = 5;
 
@@ -22,47 +22,50 @@ public class LambdaFibonacciInvoker {
         Map<String, Object> inputValues = readInputFromFile(INPUT_FILE);
 
         /* Start one lambda function for all values with 128MB */
-        long start_time = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         runLamdaFibonacci(LAMBDA_FUNCTION_128MB, inputValues, ITERATIONS);
-        logger.info("Sequential with 128MB execution took: " + (System.currentTimeMillis() - start_time));
+        logger.info("Sequential with 128MB execution took: " + (System.currentTimeMillis() - startTime));
+
 
 
         /* Start one lambda function for all values with 2GB */
-        start_time = System.currentTimeMillis();
+        startTime = System.currentTimeMillis();
         runLamdaFibonacci(LAMBDA_FUNCTION_2GB, inputValues, ITERATIONS);
-        logger.info("Sequential with 2GB execution took: " + (System.currentTimeMillis() - start_time));
+        logger.info("Sequential with 2GB execution took: " + (System.currentTimeMillis() - startTime));
 
 
 
         /* Start lambda function for each value */
-        start_time = System.currentTimeMillis();
+        startTime = System.currentTimeMillis();
         ((JsonArray)inputValues.get("input")).forEach( value -> {
             Map<String, Object> tmp = new HashMap<>();
             tmp.put("input", new Integer[]{value.getAsInt()});
             runLamdaFibonacci(LAMBDA_FUNCTION_128MB, tmp);
         });
-        logger.info("Execution for each value took: " + (System.currentTimeMillis() - start_time));
+        logger.info("Execution for each value took: " + (System.currentTimeMillis() - startTime));
 
 
         /* Start lambda function for each value with threading */
-        List<Thread> threadList = new ArrayList<>();
-        start_time = System.currentTimeMillis();
-        ((JsonArray)inputValues.get("input")).forEach( value -> {
-            Map<String, Object> tmp = new HashMap<>();
-            tmp.put("input", new Integer[]{value.getAsInt()});
-            Thread thread = new Thread(() -> runLamdaFibonacci(LAMBDA_FUNCTION_128MB, tmp));
-            threadList.add(thread);
-        });
+        for (int i = 0; i < ITERATIONS; i++) {
+            List<Thread> threadList = new ArrayList<>();
+            startTime = System.currentTimeMillis();
+            ((JsonArray)inputValues.get("input")).forEach( value -> {
+                Map<String, Object> tmp = new HashMap<>();
+                tmp.put("input", new Integer[]{value.getAsInt()});
+                Thread thread = new Thread(() -> runLamdaFibonacci(LAMBDA_FUNCTION_128MB, tmp));
+                threadList.add(thread);
+            });
 
-        threadList.forEach(Thread::start);
-        threadList.forEach(thread -> {
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-        logger.info("Execution for each value with threading took: " + (System.currentTimeMillis() - start_time));
+            threadList.forEach(Thread::start);
+            threadList.forEach(thread -> {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+            logger.info("Execution for each value with threading took: " + (System.currentTimeMillis() - startTime));
+        }
 
     }
 
@@ -93,10 +96,10 @@ public class LambdaFibonacciInvoker {
         for (int i = 1; i <= iterations; i++) {
 
             try {
-                long start_time = System.currentTimeMillis();
+                long startTime = System.currentTimeMillis();
                 JsonObject resultLambda = gateway.invokeFunction(functionName, input);
                 logger.info(resultLambda.toString());
-                logger.info("Iteration " + i + " took: " + (System.currentTimeMillis() - start_time));
+                logger.info("Iteration " + i + " took: " + (System.currentTimeMillis() - startTime));
             } catch (IOException e) {
                 e.printStackTrace();
             }
