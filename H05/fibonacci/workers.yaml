@@ -23,13 +23,13 @@ workflowBody:
           type: "collection"
       properties:
         - name: "resource"
-          value: "python:arn:aws:lambda:us-east-1:778033607199:function:LambdaWorkers"
+          value: "python:arn:aws:lambda:us-east-1:722672042190:function:workers"
   - parallelFor:
       name: "LambdaFunction128MBParallel"
       loopCounter:
         name: "counter"
         type: "number"
-        from: 1
+        from: "0"
         to: "workers/f"
         step: "1"
       dataIns:
@@ -37,7 +37,7 @@ workflowBody:
           type: "collection"
           source: "workers/arrays"
           constraints:
-            - name: distribution
+            - name: "distribution"
               value: "BLOCK(1)"
       loopBody:
         - function:
@@ -49,18 +49,18 @@ workflowBody:
                 source: "LambdaFunction128MBParallel/arrays"
             properties:
               - name: "resource"
-                value: "java:arn:aws:lambda:us-east-1:778033607199:function:LambdaFibonacci128MB"
+                value: "java:arn:aws:lambda:us-east-1:722672042190:function:LambdaFibonacci128MB"
             dataOuts:
               - name: "output"
                 type: "collection"
       dataOuts:
         - name: "output"
           type: "collection"
-          source: "LambdaFibonacci128MBParallel/output"
+          source: "LambdaFunction128MB/output"
           constraints:
             - name: "aggregation"
               value: "+"
 dataOuts:
-  - name: "message"
-    type: "string"
-    source: "hello/message"
+  - name: "result"
+    type: "collection"
+    source: "LambdaFunction128MBParallel/output"
