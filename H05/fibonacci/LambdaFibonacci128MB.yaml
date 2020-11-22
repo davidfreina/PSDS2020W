@@ -1,0 +1,24 @@
+---
+name: "LambdaFibonacci128MB"
+dataIns:
+  - name: "input"
+    type: "collection"
+    source: "input"
+workflowBody:
+  - function:
+      name: "LambdaFibonacci128MB"
+      type: "LambdaFibonacci128MBType"
+      dataIns:
+        - name: "input"
+          type: "collection"
+          source: "LambdaFibonacci128MB/input"
+      dataOuts:
+        - name: "output"
+          type: "collection"
+      properties:
+        - name: "resource"
+          value: "java:arn:aws:lambda:us-east-1:778033607199:function:LambdaFibonacci128MB"
+dataOuts:
+  - name: "output"
+    type: "collection"
+    source: "LambdaFibonacci128MB/output"
