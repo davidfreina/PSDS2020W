@@ -1,5 +1,4 @@
 {
-    "videos": 2,
     "videoBucketId": "INSERTIDHERE",
     "extractedFramesBucket": "BUCKET-LINK",
     "numberOfFramesToAnalyzePerInstance": 1000

@@ -1,128 +1,121 @@
 ---
 name: "objectRecognition"
 dataIns:
-- name: "videos"
-  type: "number"
-  source: "videos"
-- name: "videoBucketId"
-  type: "string"
-  source: "videoBucketId"
-- name: "extractedFramesBucket"
-  type: "string"
-  source: "extractedFramesBucket"
-- name: "numberOfFramesToAnalyzePerInstance"
-  type: "number"
-  source: "numberOfFramesToAnalyzePerInstance"
+  - name: "videoBucketId"
+    type: "string"
+    source: "videoBucketId"
+  - name: "extractedFramesBucket"
+    type: "string"
+    source: "extractedFramesBucket"
+  - name: "numberOfFramesToAnalyzePerInstance"
+    type: "number"
+    source: "numberOfFramesToAnalyzePerInstance"
 workflowBody:
-- parallelFor:
-    name: "extractFramesParallel"
-    dataIns:
-    - name: "videoBucketId"
-      type: "string"
-      source: "objectRecognition/videoBucketId"
-      constraints:
-      - name: "distribution"
-        value: "BLOCK(1)"
-    - name: "extractedFramesBucket"
-      type: "string"
-      source: "objectRecognition/extractedFramesBucket"
-    loopCounter:
-      name: "numberOfVideos"
-      type: "number"
-      from: "0"
-      to: "objectRecognition/videos"
-      step: "1"
-    loopBody:
-    - function:
-        name: "extractFrames"
-        type: "extractFramesType"
-        dataIns:
+  - function:
+      name: "getVideoLinks"
+      type: "getVideoLinksType"
+      dataIns:
         - name: "videoBucketId"
           type: "string"
-          source: "extractFramesParallel/videoBucketId"
-        - name: "extractedFramesBucket"
-          type: "string"
-          source: "extractFramesParallel/extractedFramesBucket"
-        dataOuts:
-        - name: "extractFramesSuccess"
-          type: "boolean"
-        - name: "extractedFrames"
-          type: "number"
-        properties:
+          source: "objectRecognition/videoBucketId"
+      properties:
         - name: "resource"
-          value: "FILL IN ARN"
-    dataOuts:
-    - name: "extractFramesSuccess"
-      type: "collection"
-      source: "extractFrames/extractFramesSuccess"
-      constraints:
-      - name: "aggregation"
-        value: "+"
-    - name: "extractedFrames"
-      type: "number"
-      source: "extractFrames/extractedFrames"
-      constraints:
-      - name: "aggregation"
-        value: "+"
-- parallelFor:
-    name: "analyzeFramesParallel"
-    dataIns:
-    - name: "extractedFramesBucket"
-      type: "string"
-      source: "objectRecognition/extractedFramesBucket"
-    loopCounter:
-      name: "numberOfFrames"
-      type: "number"
-      from: "0"
-      to: "extractFramesParallel/extractedFrames"
-      step: "objectRecognition/numberOfFramesToAnalyzePerInstance"
-    loopBody:
-    - function:
-        name: "analyzeFrames"
-        type: "analyzeFramesType"
-        dataIns:
-        - name: "extractedFramesBucket"
-          type: "string"
-          source: "analyzeFramesParallel/extractedFramesBucket"
-        dataOuts:
-        - name: "analyzedFramesNames"
+          value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:getVideoLinks"
+      dataOuts:
+        - name: "videoLinks"
           type: "collection"
-        properties:
-        - name: "resource"
-          value: "FILL IN ARN"
-    - if:
-        name: "IfThenElse"
-        condition:
-          combinedWith: "or"
-          conditions:
-          - data1: "analyzedFramesNames"
-            data2: "0"
-            operator: ">"
-        then:
+        - name: "numberOfVideos"
+          type: "number"
+  - parallelFor:
+      name: "extractFramesParallel"
+      dataIns:
+        - name: "videoLinks"
+          type: "collection"
+          source: "getVideoLinks/videoLinks"
+          constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+        - name: "extractedFramesBucket"
+          type: "string"
+          source: "objectRecognition/extractedFramesBucket"
+          constraints:
+            - name: "element-index"
+              value: "0"
+      loopCounter:
+        name: "counter"
+        type: "number"
+        from: "0"
+        to: "getVideoLinks/numberOfVideos"
+        step: "1"
+      loopBody:
         - function:
-            name: "awsRekognition"
-            type: "awsRekognitionType"
+            name: "extractFrames"
+            type: "extractFramesType"
             dataIns:
-            - name: "extractedFramesBucket"
-              type: "string"
-              source: "analyzeFramesParallel/extractedFramesBucket"
-            - name: "analyzedFramesNames"
-              type: "collection"
-              source: "analyzeFrames/analyzedFramesNames"
+              - name: "videoLinks"
+                type: "string"
+                source: "extractFramesParallel/videoLinks"
             dataOuts:
-            - name: "humanSentence"
-              type: "string"
+              - name: "extractFramesSuccess"
+                type: "number"
+              - name: "extractedFramesBucket"
+                type: "string"
             properties:
-            - name: "resource"
-              value: "FILL IN ARN"
-    dataOuts:
-    - name: "humanSentence"
-      type: "collection"
-      source: "awsRekognition/humanSentence"
-      constraints:
+              - name: "resource"
+                value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:extractFrames"
+      dataOuts:
+        - name: "extractFramesSuccess"
+          type: "collection"
+          source: "extractFrames/extractFramesSuccess"
+          constraints:
+            - name: "aggregation"
+              value: "+"
+        - name: "extractedFramesBuckets"
+          type: "collection"
+          source: "extractFrames/extractedFramesBucket"
+          constraints:
+            - name: "aggregation"
+              value: "+"
+  - parallelFor:
+      name: "analyzeFramesParallel"
+      dataIns:
+        - name: "extractedFramesBuckets"
+          type: "string"
+          source: "extractFramesParallel/extractedFramesBuckets"
+          constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+      loopCounter:
+        name: "counter"
+        type: "number"
+        from: "0"
+        to: "getVideoLinks/numberOfVideos"
+        step: "1"
+      loopBody:
+        - function:
+            name: "analyzeFrames"
+            type: "analyzeFramesType"
+            dataIns:
+              - name: "extractedFramesBucket"
+                type: "string"
+                source: "analyzeFramesParallel/extractedFramesBuckets"
+            dataOuts:
+              - name: "analyzedFrameNames"
+                type: "collection"
+            properties:
+              - name: "resource"
+                value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:analyzeFrames"
+      dataOuts:
+        - name: "analyzedFrameNames"
+          type: "collection"
+          source: "analyzeFramesParallel/analyzedFrameNames"
+          constraints:
+            - name: "aggregation"
+              value: "+"
+dataOuts:
+  - name: "extractedFrames"
+    type: "number"
+    source: "extractFrames/extractedFrames"
+    constraints:
       - name: "aggregation"
         value: "+"
-dataOuts:
-- name: "result"
-  type: "collection"
-  source: "analyzeFramesParallel/output"
