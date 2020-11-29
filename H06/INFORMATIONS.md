@@ -4,7 +4,7 @@
 
 ### Compound functions
 
-We will use the compound functions: ````parallelFor````. We might also use the ````if-then-else````-function but we are not yet sure if we need it.
+We will use the compound functions: ````parallelFor````. We might also use the ````if-then-else````-function, but we are not yet sure if we need it.
 
 ### Dependencies
 
@@ -40,15 +40,19 @@ We did not write a single function ````allInOuts```` but rather wrote a function
 - The video file names are unix timestamps or any other kind of time information so that we can use it in our final output to indicate when a dog/kid was detected.
 - Almost everything we are going to do with S3 is based on assumptions because we both have not worked with it up until this assignment.
 
-## Function explainations
+## Function explanations
 
-### Step 1: Extract frames
+### Step 1: Get video links
 
-We are going to give some kind of bucket id (string: ````videoBucketId````) to access the bucket. We plan to save all extracted frames into one S3 bucket (string: ````extractedFramesBucket````) which is filled by the parallel executions of our ````extractFramesParallel````-Function. This function uses the number: ````videos```` given in the ````objectRecognitionInput.json```` to create ````videos```` many ````extractFrames````-Functions which then all extract the frames of one video and save them to the ````extractedFramesBucket````
+First we will retrieve the links to each video in the source folder on S3, which is specified by the given ````videoBucketId```` string. This function will return a collection of strings called ````videoLinks````.
 
-### Step 2: image comparison
+### Step 2: Extract frames
 
-We are going to parallelize this step as well. We want to analyze ````numberOfFramesToAnalyzePerInstance```` frames on one ec2 instance so our loop counter goes from 0 to ````extractedFrames```` with step size ````numberOfFramesToAnalyzePerInstance````. We have to think about overlapping frames on the different instances which is why we maybe have to alter the counter a little bit when implementing this. After we have analyzed the given number of frames we are going to start one AWS Rekognition instance which receives the ````extractedFramesBucket```` and the positively analyzed images as input.
+For each element in ````videoLinks````(=````numberOfVideos````) we will parallely call ````extractFrames````. This function gets each frame of the video with an interval of 0.5 seconds and saves it to a new S3 bucket. If the retrieval was successful, this function will return 1, otherwise 0.
+
+### Step 3: Image comparison
+
+We are going to parallelize this step as well. We want to analyze *N* frames on one ec2 instance. *N* is specfified in *objectRecognitionInput.json* as ````numberOfFramesToAnalyzePerInstance````. That means, we will parallely call this function *extractedFramesOfVideo* / ````numberOfFramesToAnalyzePerInstance```` times for each video. We have to think about overlapping frames on the different instances which is why we maybe have to alter the counter a little bit when implementing this. After we have analyzed the given number of frames we are going to start one AWS Rekognition instance which receives the ````extractedFramesBucket```` and the positively analyzed images as input.
 
 ### Step 3: AWS Rekognition
 
