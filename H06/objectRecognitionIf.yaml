@@ -4,9 +4,6 @@ dataIns:
   - name: "videoBucketId"
     type: "string"
     source: "videoBucketId"
-  - name: "extractedFramesBucket"
-    type: "string"
-    source: "extractedFramesBucket"
   - name: "numberOfFramesToAnalyzePerInstance"
     type: "number"
     source: "numberOfFramesToAnalyzePerInstance"
@@ -26,6 +23,7 @@ workflowBody:
           type: "collection"
         - name: "numberOfVideos"
           type: "number"
+          saveto: "numberOfVideos"
   - parallelFor:
       name: "extractFramesParallel"
       dataIns:
@@ -35,9 +33,9 @@ workflowBody:
           constraints:
             - name: "distribution"
               value: "BLOCK(1)"
-        - name: "extractedFramesBucket"
-          type: "string"
-          source: "objectRecognition/extractedFramesBucket"
+        - name: "numberOfVideos"
+          type: "number"
+          source: "getVideoLinks/numberOfVideos"
           constraints:
             - name: "element-index"
               value: "0"
@@ -55,11 +53,16 @@ workflowBody:
               - name: "videoLinks"
                 type: "string"
                 source: "extractFramesParallel/videoLinks"
+              - name: "numberOfVideos"
+                type: "number"
+                source: "extractFramesParallel/numberOfVideos"
             dataOuts:
               - name: "extractFramesSuccess"
                 type: "number"
               - name: "extractedFramesBucket"
                 type: "string"
+              - name: "numberOfVideos"
+                type: "number"
             properties:
               - name: "resource"
                 value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:extractFrames"
@@ -76,6 +79,9 @@ workflowBody:
           constraints:
             - name: "aggregation"
               value: "+"
+        - name: "numberOfVideos"
+          type: "number"
+          source: "extractFrames/numberOfVideos"
   - parallelFor:
       name: "analyzeFramesParallel"
       dataIns:
@@ -85,11 +91,17 @@ workflowBody:
           constraints:
             - name: "distribution"
               value: "BLOCK(1)"
+        - name: "numberOfVideos"
+          type: "number"
+          source: "extractFramesParallel/numberOfVideos"
+          constraints:
+            - name: "element-index"
+              value: "0"
       loopCounter:
         name: "counter"
         type: "number"
         from: "0"
-        to: "getVideoLinks/numberOfVideos"
+        to: "extractFramesParallel/numberOfVideos"
         step: "1"
       loopBody:
         - function:
@@ -99,19 +111,64 @@ workflowBody:
               - name: "extractedFramesBucket"
                 type: "string"
                 source: "analyzeFramesParallel/extractedFramesBuckets"
+              - name: "numberOfVideos"
+                type: "number"
+                source: "analyzeFramesParallel/numberOfVideos"
             dataOuts:
               - name: "analyzedFrameNames"
                 type: "collection"
+              - name: "numberOfVideos"
+                type: "number"
             properties:
               - name: "resource"
                 value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:analyzeFrames"
       dataOuts:
-        - name: "analyzedFrameNames"
+        - name: "analyzedFrameNamesCollection"
           type: "collection"
-          source: "analyzeFramesParallel/analyzedFrameNames"
+          source: "analyzeFrames/analyzedFrameNames"
           constraints:
             - name: "aggregation"
               value: "+"
+        - name: "numberOfVideos"
+          type: "number"
+          source: "analyzeFrames/numberOfVideos"
+  - parallelFor:
+      name: "awsRekognitionParallel"
+      dataIns:
+        - name: "analyzedFrameNamesCollection"
+          type: "collection"
+          source: "analyzeFramesParallel/analyzedFrameNamesCollection"
+          constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+      loopCounter:
+        name: "counter"
+        type: "number"
+        from: "0"
+        to: "analyzeFramesParallel/numberOfVideos"
+        step: "1"
+      loopBody:
+        - function:
+            name: "awsRekognition"
+            type: "awsRekognitionType"
+            dataIns:
+              - name: "analyzedFrameNamesCollection"
+                type: "collection"
+                source: "awsRekognitionParallel/analyzedFrameNamesCollection"
+            dataOuts:
+              - name: "humanSentence"
+                type: "string"
+            properties:
+              - name: "resource"
+                value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:awsRekognition"
+      dataOuts:
+        - name: "humanSentenceCollection"
+          type: "collection"
+          source: "awsRekognition/humanSentence"
+          constraints:
+            - name: "aggregation"
+              value: "+"
+
 dataOuts:
   - name: "extractedFrames"
     type: "number"
