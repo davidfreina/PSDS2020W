@@ -17,7 +17,11 @@ workflowBody:
           type: "string"
       properties:
         - name: "resource"
+<<<<<<< HEAD
           value: "python:arn:aws:lambda:us-east-1:778033607199:function:helloWorld"
+=======
+          value: "python:PUT THE ARN of YOUR FUNCTION HELLO WORLD HERE"
+>>>>>>> e5bd7152c7467bf9588c33937bfe0e2c3d969383
 dataOuts:
   - name: "message"
     type: "string"
