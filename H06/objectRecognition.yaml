@@ -1,0 +1,120 @@
+---
+name: "objectRecognition"
+dataIns:
+  - name: "videos"
+    type: "number"
+    source: "videos"
+  - name: "videoBucketId"
+    type: "string"
+    source: "videoBucketId"
+  - name: "extractedFramesBucket"
+    type: "string"
+    source: "extractedFramesBucket"
+  - name: "numberOfFramesToAnalyzePerInstance"
+    type: "number"
+    source: "numberOfFramesToAnalyzePerInstance"
+workflowBody:
+  - parallelFor:
+      name: "extractFramesParallel"
+      loopCounter:
+        name: "numberOfVideos"
+        type: "number"
+        from: "0"
+        to: "objectRecognition/videos"
+        step: "1"
+      dataIns:
+        - name: "videoBucketId"
+          type: "string"
+          source: "objectRecognition/videoBucketId"
+          constraints:
+            - name: "distribution"
+              value: "BLOCK(1)"
+        - name: "extractedFramesBucket"
+          type: "string"
+          source: "objectRecognition/extractedFramesBucket"
+      loopBody:
+        - function:
+            name: "extractFrames"
+            type: "extractFramesType"
+            dataIns:
+              - name: "videoBucketId"
+                type: "string"
+                source: "extractFramesParallel/videoBucketId"
+              - name: "extractedFramesBucket"
+                type: "string"
+                source: "extractFramesParallel/extractedFramesBucket"
+            properties:
+              - name: "resource"
+                value: "FILL IN ARN"
+            dataOuts:
+              - name: "extractFramesSuccess"
+                type: "boolean"
+              - name: "extractedFrames"
+                type: "number"
+      dataOuts:
+        - name: "extractFramesSuccess"
+          type: "collection"
+          source: "extractFrames/extractFramesSuccess"
+          constraints:
+            - name: "aggregation"
+              value: "+"
+        - name: "extractedFrames"
+          type: "number"
+          source: "extractFrames/extractedFrames"
+          constraints:
+            - name: "aggregation"
+              value: "+"
+
+  - parallelFor:
+      name: "analyzeFramesParallel"
+      loopCounter:
+        name: "numberOfFrames"
+        type: "number"
+        from: "0"
+        to: "extractFramesParallel/extractedFrames"
+        step: "objectRecognition/numberOfFramesToAnalyzePerInstance"
+      dataIns:
+        - name: "extractedFramesBucket"
+          type: "string"
+          source: "objectRecognition/extractedFramesBucket"
+      loopBody:
+        - function:
+            name: "analyzeFrames"
+            type: "analyzeFramesType"
+            dataIns:
+              - name: "extractedFramesBucket"
+                type: "string"
+                source: "analyzeFramesParallel/extractedFramesBucket"
+            properties:
+              - name: "resource"
+                value: "FILL IN ARN"
+            dataOuts:
+              - name: "analyzedFramesNames"
+                type: "collection"
+        - function:
+            name: "awsRekognition"
+            type: "awsRekognitionType"
+            dataIns:
+              - name: "extractedFramesBucket"
+                type: "string"
+                source: "analyzeFramesParallel/extractedFramesBucket"
+              - name: "analyzedFramesNames"
+                type: "collection"
+                source: "analyzeFrames/analyzedFramesNames"
+            properties:
+              - name: "resource"
+                value: "FILL IN ARN"
+            dataOuts:
+              - name: "humanSentence"
+                type: "string"
+      dataOuts:
+        - name: "humanSentence"
+          type: "collection"
+          source: "awsRekognition/humanSentence"
+          constraints:
+            - name: "aggregation"
+              value: "+"
+dataOuts:
+  - name: "result"
+    type: "collection"
+    source: "analyzeFramesParallel/output"
