@@ -1,1 +1,338 @@
-{"name":"objectRecognition","dataIns":[{"name":"videos","type":"number","source":"videos"},{"name":"videoBucketId","type":"string","source":"videoBucketId"},{"name":"extractedFramesBucket","type":"string","source":"extractedFramesBucket"},{"name":"numberOfFramesToAnalyzePerInstance","type":"number","source":"numberOfFramesToAnalyzePerInstance"}],"workflowBody":[{"parallelFor":{"name":"extractFramesParallel","dataIns":[{"name":"videoBucketId","type":"string","source":"objectRecognition/videoBucketId","constraints":[{"name":"distribution","value":"BLOCK(1)"}]},{"name":"extractedFramesBucket","type":"string","source":"objectRecognition/extractedFramesBucket"}],"loopCounter":{"name":"numberOfVideos","type":"number","from":"0","to":"objectRecognition/videos","step":"1"},"loopBody":[{"function":{"name":"extractFrames","type":"extractFramesType","dataIns":[{"name":"videoBucketId","type":"string","source":"extractFramesParallel/videoBucketId"},{"name":"extractedFramesBucket","type":"string","source":"extractFramesParallel/extractedFramesBucket"}],"dataOuts":[{"name":"extractFramesSuccess","type":"boolean"},{"name":"extractedFrames","type":"number"}],"properties":[{"name":"resource","value":"FILL IN ARN"}]}}],"dataOuts":[{"name":"extractFramesSuccess","type":"collection","source":"extractFrames/extractFramesSuccess","constraints":[{"name":"aggregation","value":"+"}]},{"name":"extractedFrames","type":"number","source":"extractFrames/extractedFrames","constraints":[{"name":"aggregation","value":"+"}]}]}},{"parallelFor":{"name":"analyzeFramesParallel","dataIns":[{"name":"extractedFramesBucket","type":"string","source":"objectRecognition/extractedFramesBucket"}],"loopCounter":{"name":"numberOfFrames","type":"number","from":"0","to":"extractFramesParallel/extractedFrames","step":"objectRecognition/numberOfFramesToAnalyzePerInstance"},"loopBody":[{"function":{"name":"analyzeFrames","type":"analyzeFramesType","dataIns":[{"name":"extractedFramesBucket","type":"string","source":"analyzeFramesParallel/extractedFramesBucket"}],"dataOuts":[{"name":"analyzedFramesNames","type":"collection"}],"properties":[{"name":"resource","value":"FILL IN ARN"}]}},{"function":{"name":"awsRekognition","type":"awsRekognitionType","dataIns":[{"name":"extractedFramesBucket","type":"string","source":"analyzeFramesParallel/extractedFramesBucket"},{"name":"analyzedFramesNames","type":"collection","source":"analyzeFrames/analyzedFramesNames"}],"dataOuts":[{"name":"humanSentence","type":"string"}],"properties":[{"name":"resource","value":"FILL IN ARN"}]}}],"dataOuts":[{"name":"humanSentence","type":"collection","source":"awsRekognition/humanSentence","constraints":[{"name":"aggregation","value":"+"}]}]}}],"dataOuts":[{"name":"result","type":"collection","source":"analyzeFramesParallel/output"}]}
+{
+    "name": "objectRecognition",
+    "dataIns": [
+      {
+        "name": "videoBucketId",
+        "type": "string",
+        "source": "videoBucketId"
+      },
+      {
+        "name": "numberOfFramesToAnalyzePerInstance",
+        "type": "number",
+        "source": "numberOfFramesToAnalyzePerInstance"
+      }
+    ],
+    "workflowBody": [
+      {
+        "function": {
+          "name": "getVideoLinks",
+          "type": "getVideoLinksType",
+          "dataIns": [
+            {
+              "name": "videoBucketId",
+              "type": "string",
+              "source": "objectRecognition/videoBucketId"
+            }
+          ],
+          "properties": [
+            {
+              "name": "resource",
+              "value": "nodejs:arn:aws:lambda:us-east-1:778033607199:function:getVideoLinks"
+            }
+          ],
+          "dataOuts": [
+            {
+              "name": "videoLinks",
+              "type": "collection"
+            },
+            {
+              "name": "numberOfVideos",
+              "type": "number",
+              "saveto": "numberOfVideos"
+            }
+          ]
+        }
+      },
+      {
+        "parallelFor": {
+          "name": "extractFramesParallel",
+          "dataIns": [
+            {
+              "name": "videoLinks",
+              "type": "collection",
+              "source": "getVideoLinks/videoLinks",
+              "constraints": [
+                {
+                  "name": "distribution",
+                  "value": "BLOCK(1)"
+                }
+              ]
+            },
+            {
+              "name": "numberOfVideos",
+              "type": "number",
+              "source": "getVideoLinks/numberOfVideos",
+              "constraints": [
+                {
+                  "name": "distribution",
+                  "value": "REPLICATE(*)"
+                }
+              ]
+            }
+          ],
+          "loopCounter": {
+            "name": "counter",
+            "type": "number",
+            "from": "0",
+            "to": "getVideoLinks/numberOfVideos",
+            "step": "1"
+          },
+          "loopBody": [
+            {
+              "function": {
+                "name": "extractFrames",
+                "type": "extractFramesType",
+                "dataIns": [
+                  {
+                    "name": "videoLinks",
+                    "type": "string",
+                    "source": "extractFramesParallel/videoLinks"
+                  },
+                  {
+                    "name": "numberOfVideos",
+                    "type": "number",
+                    "source": "extractFramesParallel/numberOfVideos"
+                  }
+                ],
+                "dataOuts": [
+                  {
+                    "name": "extractFramesSuccess",
+                    "type": "number"
+                  },
+                  {
+                    "name": "extractedFramesBucket",
+                    "type": "string"
+                  },
+                  {
+                    "name": "numberOfVideos",
+                    "type": "number"
+                  }
+                ],
+                "properties": [
+                  {
+                    "name": "resource",
+                    "value": "nodejs:arn:aws:lambda:us-east-1:778033607199:function:extractFrames"
+                  }
+                ]
+              }
+            }
+          ],
+          "dataOuts": [
+            {
+              "name": "extractFramesSuccess",
+              "type": "collection",
+              "source": "extractFrames/extractFramesSuccess",
+              "constraints": [
+                {
+                  "name": "aggregation",
+                  "value": "+"
+                }
+              ]
+            },
+            {
+              "name": "extractedFramesBuckets",
+              "type": "collection",
+              "source": "extractFrames/extractedFramesBucket",
+              "constraints": [
+                {
+                  "name": "aggregation",
+                  "value": "+"
+                }
+              ]
+            },
+            {
+              "name": "numberOfVideos",
+              "type": "number",
+              "source": "extractFrames/numberOfVideos"
+            }
+          ]
+        }
+      },
+      {
+        "parallelFor": {
+          "name": "analyzeFramesParallel",
+          "dataIns": [
+            {
+              "name": "extractedFramesBuckets",
+              "type": "string",
+              "source": "extractFramesParallel/extractedFramesBuckets",
+              "constraints": [
+                {
+                  "name": "distribution",
+                  "value": "BLOCK(1)"
+                }
+              ]
+            },
+            {
+              "name": "numberOfVideos",
+              "type": "number",
+              "source": "extractFramesParallel/numberOfVideos",
+              "constraints": [
+                {
+                  "name": "distribution",
+                  "value": "REPLICATE(*)"
+                }
+              ]
+            }
+          ],
+          "loopCounter": {
+            "name": "counter",
+            "type": "number",
+            "from": "0",
+            "to": "extractFramesParallel/numberOfVideos",
+            "step": "1"
+          },
+          "loopBody": [
+            {
+              "function": {
+                "name": "analyzeFrames",
+                "type": "analyzeFramesType",
+                "dataIns": [
+                  {
+                    "name": "extractedFramesBucket",
+                    "type": "string",
+                    "source": "analyzeFramesParallel/extractedFramesBuckets"
+                  },
+                  {
+                    "name": "numberOfVideos",
+                    "type": "number",
+                    "source": "analyzeFramesParallel/numberOfVideos"
+                  }
+                ],
+                "dataOuts": [
+                  {
+                    "name": "analyzedFrameNames",
+                    "type": "collection"
+                  },
+                  {
+                    "name": "numberOfVideos",
+                    "type": "number"
+                  },
+                  {
+                    "name": "extractedFramesBucket",
+                    "type": "string"
+                  }
+                ],
+                "properties": [
+                  {
+                    "name": "resource",
+                    "value": "nodejs:arn:aws:lambda:us-east-1:778033607199:function:analyzeFrames"
+                  }
+                ]
+              }
+            }
+          ],
+          "dataOuts": [
+            {
+              "name": "analyzedFrameNamesCollection",
+              "type": "collection",
+              "source": "analyzeFrames/analyzedFrameNames",
+              "constraints": [
+                {
+                  "name": "aggregation",
+                  "value": "+"
+                }
+              ]
+            },
+            {
+              "name": "extractedFramesBucketCollection",
+              "type": "collection",
+              "source": "analyzeFrames/extractedFramesBucket",
+              "constraints": [
+                {
+                  "name": "aggregation",
+                  "value": "+"
+                }
+              ]
+            },
+            {
+              "name": "numberOfVideos",
+              "type": "number",
+              "source": "analyzeFrames/numberOfVideos"
+            }
+          ]
+        }
+      },
+      {
+        "parallelFor": {
+          "name": "awsRekognitionParallel",
+          "dataIns": [
+            {
+              "name": "analyzedFrameNamesCollection",
+              "type": "collection",
+              "source": "analyzeFramesParallel/analyzedFrameNamesCollection",
+              "constraints": [
+                {
+                  "name": "distribution",
+                  "value": "BLOCK(1)"
+                }
+              ]
+            },
+            {
+              "name": "extractedFramesBucketsCollection",
+              "type": "collection",
+              "source": "analyzeFramesParallel/extractedFramesBucketCollection",
+              "constraints": [
+                {
+                  "name": "distribution",
+                  "value": "BLOCK(1)"
+                }
+              ]
+            }
+          ],
+          "loopCounter": {
+            "name": "counter",
+            "type": "number",
+            "from": "0",
+            "to": "analyzeFramesParallel/numberOfVideos",
+            "step": "1"
+          },
+          "loopBody": [
+            {
+              "function": {
+                "name": "awsRekognition",
+                "type": "awsRekognitionType",
+                "dataIns": [
+                  {
+                    "name": "analyzedFrameNamesCollection",
+                    "type": "collection",
+                    "source": "awsRekognitionParallel/analyzedFrameNamesCollection"
+                  },
+                  {
+                    "name": "extractedFramesBucketsCollection",
+                    "type": "collection",
+                    "source": "awsRekognitionParallel/extractedFramesBucketsCollection"
+                  }
+                ],
+                "dataOuts": [
+                  {
+                    "name": "humanSentence",
+                    "type": "string"
+                  }
+                ],
+                "properties": [
+                  {
+                    "name": "resource",
+                    "value": "nodejs:arn:aws:lambda:us-east-1:778033607199:function:awsRekognition"
+                  }
+                ]
+              }
+            }
+          ],
+          "dataOuts": [
+            {
+              "name": "humanSentenceCollection",
+              "type": "collection",
+              "source": "awsRekognition/humanSentence",
+              "constraints": [
+                {
+                  "name": "aggregation",
+                  "value": "+"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
