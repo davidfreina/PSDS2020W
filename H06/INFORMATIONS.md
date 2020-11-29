@@ -52,7 +52,7 @@ For each element in ````videoLinks````(=````numberOfVideos````) we will parallel
 
 ### Step 3: Image comparison
 
-We are going to parallelize this step as well. We want to analyze *N* frames on one ec2 instance. *N* is specfified in *objectRecognitionInput.json* as ````numberOfFramesToAnalyzePerInstance````. That means, we will parallely call this function *extractedFramesOfVideo* / ````numberOfFramesToAnalyzePerInstance```` times for each video. We have to think about overlapping frames on the different instances which is why we maybe have to alter the counter a little bit when implementing this. After we have analyzed the given number of frames we are going to start one AWS Rekognition instance which receives the ````extractedFramesBucket```` and the positively analyzed images as input.
+We are going to parallelize this step as well. We want to analyze *N* frames on one EC2 instance. *N* is specfified in *objectRecognitionInput.json* as ````numberOfFramesToAnalyzePerInstance````. That means, we will parallely call this function *extractedFramesOfVideo / N* times for each video. We have to think about overlapping frames on the different instances which is why we maybe have to alter the counter a little bit when implementing this. After we have analyzed the given number of frames we are going to start one AWS Rekognition instance which receives the ````extractedFramesBucket```` and the positively analyzed images as input.
 
 ### Step 3: AWS Rekognition
 
