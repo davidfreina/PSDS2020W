@@ -93,6 +93,7 @@ workflowBody:
     - if:
         name: "IfThenElse"
         condition:
+          combinedWith: "or"
           conditions:
           - data1: "analyzedFramesNames"
             data2: "0"
@@ -114,7 +115,6 @@ workflowBody:
             properties:
             - name: "resource"
               value: "FILL IN ARN"
-        else: []
     dataOuts:
     - name: "humanSentence"
       type: "collection"
