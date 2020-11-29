@@ -1,17 +1,7 @@
 
-<<<<<<< HEAD
-
-## Project 1: Object recognition `S3, Lambda Layers, Rekognition, OpenCV` (Java, Python, Node.js)
-
-You'll create a computer vision workflow that intelligently detects dogs, kids (and arbitrary objects) in long streams of video.
-
-#### Motivation
-
-You have a motion-sensing camera installed at your porch. When a motion is detected, the camera starts filming and stores it as separate video file to S3.
-=======
 ----
 
-# Project 1: Object recognition `S3, Lambda Layers, Rekognition, OpenCV` 
+# Project 1: Object recognition `S3, Lambda Layers, Rekognition, OpenCV`
 
 You'll create a computer vision workflow that intelligently detects dogs, kids (and arbitrary objects) in long streams of video.
 
@@ -20,19 +10,14 @@ You'll create a computer vision workflow that intelligently detects dogs, kids (
 ### Motivation
 
 You have a motion-sensing camera installed at your porch. When a motion is detected, the camera starts filming and stores it as a separate video file to S3.
->>>>>>> e5bd7152c7467bf9588c33937bfe0e2c3d969383
-At the end of the day you want to know when the dog or kid roamed around too far this day. You can't be bothered to look through the videos manually. 
+At the end of the day you want to know when the dog or kid roamed around too far this day. You can't be bothered to look through the videos manually.
 To complicate things, the camera often activates on birds, neighbors, delivery people.
 
 As most IoT devices, the camera does not do any preprocessing. Therefore the video files are very large. Applying computer vision to the entire videos is infeasible.
 
 Your workflow should efficiently detect at which times of the day your kid or dog appeared. It should be scalable (with number of videos) and cost-efficient (do with as few expensive tasks - Image recognition - as possible).
 
-<<<<<<< HEAD
-#### Input 
-=======
-### Input 
->>>>>>> e5bd7152c7467bf9588c33937bfe0e2c3d969383
+### Input
 
 A folder of videos of that day on S3.
 
@@ -43,38 +28,29 @@ A folder of videos of that day on S3.
 ```
 
 
-<<<<<<< HEAD
-#### Rough steps 
+### Rough steps
 
-* Extract frames (every 1s) from the videos and store them as images to S3. 
-=======
-### Rough steps 
-
-* Extract frames (e.g., every 0.5 second) from the videos and store them as images to S3. 
->>>>>>> e5bd7152c7467bf9588c33937bfe0e2c3d969383
-* Between each two subsequent images, check if there is a significant delta (something happening). 
+* Extract frames (e.g., every 0.5 second) from the videos and store them as images to S3.
+* Between each two subsequent images, check if there is a significant delta (something happening).
 * Use AWS Rekognition to detect dogs or kids on those
 * Output when either appeared on the porch that day as human sentence (string).
 
 
 
-<<<<<<< HEAD
-## Project 2: BWA `S3, bwa & samtools, Integrative Genomics Viewer` (Python)
-=======
 ## Week A (Homework 06): Sketch the workflow with AFCL
 
 
-Sketch a preliminary workflow with AFCL. 
+Sketch a preliminary workflow with AFCL.
 
 Think about these things:
 
-* How to group the above algorithm into functions 
+* How to group the above algorithm into functions
 * What you can do in parallel; what is independent from each other
 * What information each function needs, how you best represent it (S3 ARNs, collections thereof, named fields)
 * How information flows between your functions
 
 
-Put together the workflow using the FC Editor, AFCL Java API or a yaml editor. 
+Put together the workflow using the FC Editor, AFCL Java API or a yaml editor.
 It's preliminary so you can (and will probably) make changes next week. The main goal is to think about modularity and data flow. Since different team members will develop the functions, it's helpful to think about interfaces between them early on.
 
 Create empty functions that just produce the data how you specified with AFCL. Run the workflow with these functions with the Enactment Engine.
@@ -86,11 +62,11 @@ Create empty functions that just produce the data how you specified with AFCL. R
 
 #### Frame extractor `S3, Lambda Layers` `Python 3.8`
 
-This function should load a `.mp4` from S3, extract frames (every 0.5 second) as image using OpenCV and store the images to S3. 
+This function should load a `.mp4` from S3, extract frames (every 0.5 second) as image using OpenCV and store the images to S3.
 
 Hints:
-1. Make yourself familiar with OpenCV for Python and try it out on your Laptop. 
-1. To avoid uploading OpenCV for each function, and everytime you change them, explore other ways to get the library into your functions. 
+1. Make yourself familiar with OpenCV for Python and try it out on your Laptop.
+1. To avoid uploading OpenCV for each function, and everytime you change them, explore other ways to get the library into your functions.
 1. Stick to a deterministic naming convention for everything your store to S3, to avoid overwrites.
 
 
@@ -101,7 +77,7 @@ Return frames where the delta is above a threshold.
 
 Hints:
 * Find a way to know what images are 'subsequent'.
-* You can get more reliable deltas by [smoothing](https://towardsdatascience.com/types-of-convolution-kernels-simplified-f040cb307c37) the images with [`filter2D`](https://pythonexamples.org/python-opencv-image-filter-convolution-cv2-filter2d/) before you compare them. 
+* You can get more reliable deltas by [smoothing](https://towardsdatascience.com/types-of-convolution-kernels-simplified-f040cb307c37) the images with [`filter2D`](https://pythonexamples.org/python-opencv-image-filter-convolution-cv2-filter2d/) before you compare them.
 
 
 #### Recognition and Interpretation `S3, Rekognition, SDK`
@@ -129,17 +105,13 @@ Orchestrate the functions with the Enactment Engine.
 
 
 
-# Project 2: BWA `S3, bwa & samtools, Integrative Genomics Viewer` 
->>>>>>> e5bd7152c7467bf9588c33937bfe0e2c3d969383
+# Project 2: BWA `S3, bwa & samtools, Integrative Genomics Viewer`
 
 
 You'll create a real-life workflow to process Escherichia Coli DNA samples, and then investigate whether the patient can be treated with antibiotics.
 
-<<<<<<< HEAD
-=======
 ## Introduction
 
->>>>>>> e5bd7152c7467bf9588c33937bfe0e2c3d969383
 #### Motivation
 
 You are working in a lab that frequently receives DNA samples of Ecoli bacteria from a hospital.
@@ -147,11 +119,11 @@ Ecoli can cause food poisoning, and the recommended treatment for healthy adults
 However, in some cases antibiotics may be necessary.
 
 You want to find out if a Ecoli sample is resistant to antibiotics, to suggest a treatment for the patient.
-This has to happen as fast as possible from when the sample arrives. 
+This has to happen as fast as possible from when the sample arrives.
 
 Ecoli DNA is fairly short (4.6 million base pairs). However, samples are usually contaminated (human, bacterial DNA) so processing is hard and has to be parallelized.
 
-Your lab uses a short-read sequencer such as [Illumina MiSeq](https://www.illumina.com/systems/sequencing-platforms/miseq.html) to read ('sequence') the [basepairs](https://en.wikipedia.org/wiki/Base_pair#Examples) of the DNA. 
+Your lab uses a short-read sequencer such as [Illumina MiSeq](https://www.illumina.com/systems/sequencing-platforms/miseq.html) to read ('sequence') the [basepairs](https://en.wikipedia.org/wiki/Base_pair#Examples) of the DNA.
 
 
 #### Input
@@ -159,7 +131,7 @@ Your lab uses a short-read sequencer such as [Illumina MiSeq](https://www.illumi
 
 ```
 └── your-bucket
-    ├── NC_000913.3.fasta  
+    ├── NC_000913.3.fasta
     └── reads
         ├── hipa7_reads_R1.fastq
         └── hipa7_reads_R2.fastq
@@ -174,23 +146,6 @@ Your lab uses a short-read sequencer such as [Illumina MiSeq](https://www.illumi
 
 
 * Split the reference genome into smaller parts
-<<<<<<< HEAD
-* Run bwa index 
-* Run bwa aln in parallel for each part
-* Run bwa sampe in parallel for each part
-* Run samtools merge to concat .sam files into one .sam
-* Run samtools sort to sort entries
-* Run samtools view to convert to .bam (binary sam)
-* Run samtools index to make it searchable
-* Use IGV to investigate the `hipA` gene for resistance
-
-
-## Project 3: Prediction of stock prices `S3, Forecast, webhook` (Java, Python, Node.js)
-
-You'll create a real-life workflow to predict the price of stocks you can buy and sell.
-
-#### Motivation
-=======
 * Run bwa index  (parallel for each part)
 * Run bwa aln (parallel for each part)
 * Run bwa sampe (parallel for each part)
@@ -229,27 +184,27 @@ Furthermore, the parallel section produces files with the same name. We left you
 ## Week A (Homework 06): Sketch the workflow with AFCL
 
 
-Sketch a preliminary workflow with AFCL. 
+Sketch a preliminary workflow with AFCL.
 
-It helps to try out [`bwa`](http://manpages.ubuntu.com/manpages/bionic/man1/bwa.1.html) on your Laptop. 
+It helps to try out [`bwa`](http://manpages.ubuntu.com/manpages/bionic/man1/bwa.1.html) on your Laptop.
 
 Think about these things:
 
-* How to group the above algorithm into functions 
+* How to group the above algorithm into functions
 * How do you best 'keep' / 'transport' files between subsequent functions?
 * Each parallel function will produce files with the same name. How do you prevent naming conflicts on S3?
 * What information each function needs, how you best represent it (file content strings, S3 ARNs, collections thereof, named fields)
 * How information flows between your functions
 
 
-Put together the workflow using the FC Editor, AFCL Java API or a yaml editor. 
-It's preliminary so you can (and will probably) make changes next week. 
+Put together the workflow using the FC Editor, AFCL Java API or a yaml editor.
+It's preliminary so you can (and will probably) make changes next week.
 
 Create empty functions that just produce the data how you specified with AFCL. Run the workflow with these functions with the Enactment Engine.
 
 
 
-## Week B (Homework 07): Code the functions. 
+## Week B (Homework 07): Code the functions.
 
 Make sure you can run the steps on your Laptop / PC.
 
@@ -307,25 +262,14 @@ You'll create a real-life workflow to predict the price of stocks you can buy an
 ## Introduction
 
 ### Motivation
->>>>>>> e5bd7152c7467bf9588c33937bfe0e2c3d969383
 You frequently trade with a wide variety of stocks on various stock exchanges. Every morning, your assistant compiles you a list of 50 stock that have performed interestingly and might be worth a look.
 
 You want to see at a glance how these stocks could perform.
 Therefore you program a workflow that takes these names, predicts their prices, and visualises their past and projected price.
 
-<<<<<<< HEAD
-This should be done in parallel, per stock. The result should be visualised together.
-
-Furthermore, functions should learn from their RAM usage, so that the workflow becomes more cost-efficient everytime you run it.
-This becomes relevant in real-life cases where workflows are run millions of times.
-
-
-#### Input
-=======
 This should be done in parallel, per stock. The result should be visualised together. The workflow shoud return an URL of the visualisation.
 
 ### Input
->>>>>>> e5bd7152c7467bf9588c33937bfe0e2c3d969383
 
 ```
 ['AAL', 'ALT', 'NCMI', ... ]
@@ -334,42 +278,27 @@ This should be done in parallel, per stock. The result should be visualised toge
 * A list of stock ticker symbols traded on some exchange.
 
 
-<<<<<<< HEAD
-#### Rough steps
-=======
 ### Rough steps
->>>>>>> e5bd7152c7467bf9588c33937bfe0e2c3d969383
 
 * Pull commodity prices to S3
 * Enter them into AWS Forecast
 * Forecast for the coming year for each commodity
-<<<<<<< HEAD
-* Download the results
-* Notify yourself that the prediction is ready
-
-
-## Prooject 4: Multi-Objective Optimization `Opt4J` (Java)
-
-You will deploy a parallalized optimization algorithm which optimizes a given problem with respect to multiple objectives.
-
-#### Motivation
-=======
 * Create a chart showing the past and future price of all commodities.
 
 
 ### Week A: Sketch the workflow with AFCL
 
-Sketch a preliminary workflow with AFCL. 
+Sketch a preliminary workflow with AFCL.
 
 Think about these things:
 
-* How to group the above algorithm into functions 
+* How to group the above algorithm into functions
 * What you can do in parallel; what is independent from each other
 * What information each function needs, how you best represent it (S3 ARNs, collections thereof, named fields)
 * How information flows between your functions
 
 
-Put together the workflow using the AFCL Java API. 
+Put together the workflow using the AFCL Java API.
 It's preliminary so you can (and will probably) make changes next week. The main goal is to think about modularity and data flow. Since different team members will develop the functions, it's helpful to think about interfaces between them early on.
 
 Create empty functions that just produce the data how you specified with AFCL. Run the workflow with these functions with the Enactment Engine.
@@ -378,7 +307,7 @@ Create empty functions that just produce the data how you specified with AFCL. R
 
 ### Week B
 
-Code the functions. 
+Code the functions.
 
 
 ### Rough functions
@@ -397,7 +326,7 @@ Enter the historical data for given commodity into AWS Forecast.
 
 #### Start `S3, Forecast`
 
-Start the forecast for given commidity, and move the results to a file on S3. 
+Start the forecast for given commidity, and move the results to a file on S3.
 
 <!--Hints:
 * Since you will be generating JavaScript code, it's useful to code this function in NodeJS
@@ -429,60 +358,16 @@ You will deploy a parallalized optimization algorithm which optimizes a given pr
 ## Introduction
 
 ### Motivation
->>>>>>> e5bd7152c7467bf9588c33937bfe0e2c3d969383
 
 In this project, you will be working with [Opt4J](http://opt4j.sourceforge.net/), an open-source framework developed for optimization research. Opt4J offers a modular toolbox of diverse optimization components which can be used to implement optimizations with different optimizers, problem representations, evaluation approaches, etc.
 
 In this task, your goal is to (a) study how the optimization of a multi-objective problem via an evolutionary algorithm is implemented within Opt4J, (b) develop a workflow which makes it possible to deploy the evolutionary algorithm as a distributed application, and \(c) evaluate the speedup compared to an execution on your local machine.
 
-<<<<<<< HEAD
-#### Input
-=======
 ### Input
->>>>>>> e5bd7152c7467bf9588c33937bfe0e2c3d969383
 
 - Optimizer configuration
 - Problem configuration
 
-<<<<<<< HEAD
-(A Java project with an optimization problem implemented within Opt4J will be provided as a starting point for this task).
-
-#### Rough steps (Irrelevant for this task)
-
-- Familiarization with the implementation of an evolutionary algorithm within the Opt4J framework. 
-- Definition of a parallelization concept: 
-	- Dividing the optimization into individual tasks
-	- Definition the FC for the evolutionary optimization
-- Implementation
-	- Implementation of the FC
-	- Implementation of the functions
-
-
-## Project 5: Gate Change Alert `S3, Lambda Rekognition, DB` (Java, Python, Node.js)
-
-You need to create a workflow that performs a series of actions after a gate of a specific flight has changed at an  airport. 
-
-#### Motivation
-
-The workflow reads the information about the flight, the new gate and then loads all available passenger data (from a Database) of that flight. Also, checks the quelength of the security check. Thereafter, for every passenger from that flight that is already at the airport, the workflow reads the gps location and calculates the time to gate.
-
-#### Input 
-
-An image of security check on S3.
-
-
-#### Rough steps 
-
-- create a database in format you like (in a container, run it in a VM, use some DB service of AWS)
-- create a map of the Innsbruck Airport with GPS locations
-- distinguish the security and public area
-- read the image from S3 and use it as an input for AWS Rekognition
-
-
-## Parts you can use in addition
-
-### Amazon
-=======
 ### Rough steps
 
 You will be starting with two optimizations which are already working on a local machine but not explicitly designed for a distributed deployment. You can find the two optimizations in the following repository: [Optimization Use Cases Repository](https://github.com/uibk-dps-teaching/proSemDistrSysWS2021/tree/master/ProjectTopicEa).
@@ -499,11 +384,11 @@ For this step, you will have to:
 
 #### Week B: Implement the functions
 
-Implement the code for the functions of the designed workflow. 
+Implement the code for the functions of the designed workflow.
 
-_Note:_ Since the functions are already implemented within Opt4J, your main work will consist in (a) identifying the code necessary for the optimization, (b) defining the individual workflow tasks and defining the interfaces between them, and \(c) deploying the functions. 
+_Note:_ Since the functions are already implemented within Opt4J, your main work will consist in (a) identifying the code necessary for the optimization, (b) defining the individual workflow tasks and defining the interfaces between them, and \(c) deploying the functions.
 
-#### Week C: 
+#### Week C:
 
 - Orchestrate the functions with the Enactment Engine to run the optimization.
 - Evaluate the run time of the distributed EA by comparing it to an execution on your local machine
@@ -511,17 +396,17 @@ _Note:_ Since the functions are already implemented within Opt4J, your main work
 
 ----
 
-# Project 5: Gate Change Alert `S3, Lambda Rekognition, DB` 
+# Project 5: Gate Change Alert `S3, Lambda Rekognition, DB`
 
-You need to create a workflow that performs a series of actions after a gate of a specific flight has changed at an  airport. 
+You need to create a workflow that performs a series of actions after a gate of a specific flight has changed at an  airport.
 
 ## Introduction
 
 ### Motivation
 
-The workflow reads the information about the flight, the new gate and then loads all available passenger data (from a Database) of that flight. Also, checks the queue length of the security check. Thereafter, for every passenger from that flight that is already at the airport, the workflow reads the gps location and calculates the time to gate. If the passenger is in the public area, the workflow adds the delay for the security check. 
+The workflow reads the information about the flight, the new gate and then loads all available passenger data (from a Database) of that flight. Also, checks the queue length of the security check. Thereafter, for every passenger from that flight that is already at the airport, the workflow reads the gps location and calculates the time to gate. If the passenger is in the public area, the workflow adds the delay for the security check.
 
-### Input 
+### Input
 
 - An image(s) of security check on S3. You may assume one or multiple security check queues and then calculate the overall average waiting time.
 - threshold value (in seconds)
@@ -529,7 +414,7 @@ The workflow reads the information about the flight, the new gate and then loads
 - new gate
 
 
-### Rough steps 
+### Rough steps
 
 - create a database in format you like (in a container, run it in a VM, use some DB service of AWS)
 - fill the database with some passenger data, flights, gates
@@ -541,17 +426,17 @@ The workflow reads the information about the flight, the new gate and then loads
 
 ## Week A (Homework 06): Sketch the workflow with AFCL
 
-Sketch a preliminary workflow with AFCL. 
+Sketch a preliminary workflow with AFCL.
 
 Think about these things:
 
-* How to group the above algorithm into functions 
+* How to group the above algorithm into functions
 * What you can do in parallel; what is independent from each other (e.g. reading the passengers from the flight and calculating the security check delay)
 * What information each function needs, how you best represent it (access images to S3, collections for passengers)
 * How information flows between your functions
 
 
-Put together the workflow using the FC Editor, AFCL Java API or a yaml editor. 
+Put together the workflow using the FC Editor, AFCL Java API or a yaml editor.
 
 Create empty functions that just produce the data how you specified with AFCL. Run the workflow with these functions with the Enactment Engine.
 
@@ -567,12 +452,12 @@ Think which passenger data you will need for later.
 
 #### Calculate security check delay `AWS Rekognition` `AWS S3`
 
-This function should load an image(s) from S3 and call AWS rekognition for each image (each waiting queue). In case you use more images, you would need a reduction function to calculate the average waiting time. 
+This function should load an image(s) from S3 and call AWS rekognition for each image (each waiting queue). In case you use more images, you would need a reduction function to calculate the average waiting time.
 
 
-#### Read GPS Location 
+#### Read GPS Location
 
-This function should return the GPS location of a passenger (e.g., from the DB). 
+This function should return the GPS location of a passenger (e.g., from the DB).
 
 
 
@@ -598,7 +483,6 @@ Orchestrate the functions with the Enactment Engine.
 # Parts you can use in addition
 
 ## Amazon
->>>>>>> e5bd7152c7467bf9588c33937bfe0e2c3d969383
 
 ```
 S3 Glacier
@@ -624,11 +508,7 @@ SQS (pub-sub queue)
 Greengrass (IoT, local / in-cloud processing)
 ```
 
-<<<<<<< HEAD
-### IBM Lite
-=======
 ## IBM Lite
->>>>>>> e5bd7152c7467bf9588c33937bfe0e2c3d969383
 
 ```
 Watson assistant (chatbot / text to some action)
@@ -640,5 +520,5 @@ Object storage
 Natural language understanding
 Speech to text (streaming transcription)
 Text to speech
-Tone analyzer (text sentiment)	
+Tone analyzer (text sentiment)
 ```
