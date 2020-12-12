@@ -17,15 +17,27 @@ As most IoT devices, the camera does not do any preprocessing. Therefore the vid
 
 Your workflow should efficiently detect at which times of the day your kid or dog appeared. It should be scalable (with number of videos) and cost-efficient (do with as few expensive tasks - Image recognition - as possible).
 
-### Input
+### Given files
 
 A folder of videos of that day on S3.
 
-```
-└── your-video-bucket
-    ├── 1604670378.mp4
-    └── 1604670406.mp4
-```
+
+├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603365437.mp4
+
+├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603366941.mp4
+
+├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603376072.mp4
+
+├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603377206.mp4
+
+├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603379182.mp4
+
+├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603379635.mp4
+
+└── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/OBJR/1603380451.mp4
+
+Credit: [The Fletchers - YouTube](https://www.youtube.com/channel/UCOaIS5-uqsnXih19vIuNLmQ)
+
 
 
 ### Rough steps
@@ -112,49 +124,63 @@ You'll create a real-life workflow to process Escherichia Coli DNA samples, and 
 
 ## Introduction
 
-#### Motivation
+### Motivation
 
 You are working in a lab that frequently receives DNA samples of Ecoli bacteria from a hospital.
-Ecoli can cause food poisoning, and the recommended treatment for healthy adults is to just wait it out.
+Ecoli can cause potentially food poisoning, for which the recommended treatment for healthy adults is to just wait it out.
 However, in some cases antibiotics may be necessary.
 
-You want to find out if a Ecoli sample is resistant to antibiotics, to suggest a treatment for the patient.
-This has to happen as fast as possible from when the sample arrives.
+You want to find out if this Ecoli strain could be treated with antibiotics, to then suggest a treatment for the patient.
 
-Ecoli DNA is fairly short (4.6 million base pairs). However, samples are usually contaminated (human, bacterial DNA) so processing is hard and has to be parallelized.
+This has to happen as fast as possible from when the sample arrives. Ecoli DNA is fairly short (4.6 million base pairs). However, samples are usually contaminated (human, bacterial DNA) so processing is hard and has to be parallelized.
 
 Your lab uses a short-read sequencer such as [Illumina MiSeq](https://www.illumina.com/systems/sequencing-platforms/miseq.html) to read ('sequence') the [basepairs](https://en.wikipedia.org/wiki/Base_pair#Examples) of the DNA.
 
 
-#### Input
+### Given files
 
 
+
+├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/BWA/NC_000913.3-hipA7.fasta
+
+└── reads
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/BWA/reads/hipa7_reads_R1.fastq
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── https://distributed-systems-materials.s3.eu-central-1.amazonaws.com/BWA/reads/hipa7_reads_R2.fastq
+
+
+* One [FASTA](https://genome.sph.umich.edu/wiki/FASTA) text file containing the entire DNA of Ecoli ('reference genome')
+* Two FASTQ text files (FASTA plus likelihood that reads are correct) with paired-end reads ('ABCDE' and 'EDCBA', respectively) of your Ecoli sample, obtained from the MiSeq.
+
+Update: The reads were slimmed down to 50% of its previous size. We also left you [a hint here](#hints) to better cope with output file size.
+
+### Rough steps
+
+```sh
+# Non-parallel, non-distributed
+# Linux only
+# Install bwa, samtools first.
+
+bwa index NC_000913.3-hipA7.fasta
+bwa aln NC_000913.3-hipA7.fasta reads/hipa7_reads_R1.fastq > aln_sa1.sai
+bwa aln NC_000913.3-hipA7.fasta reads/hipa7_reads_R2.fastq > aln_sa2.sai
+bwa sampe NC_000913.3-hipA7.fasta aln_sa1.sai aln_sa2.sai reads/hipa7_reads_R1.fastq reads/hipa7_reads_R2.fastq > NC_000913.3.sam
+samtools sort -O sam -T sample.sort -o NC_000913.3sorted.sam NC_000913.3.sam
+samtools view -b -S NC_000913.3sorted.sam > NC_000913.3sorted.bam
+samtools index NC_000913.3sorted.bam
+
+echo "#############################################################"
+echo "#                           DONE                            # "
+echo "# Output: NC_000913.3sorted.bam, NC_000913.3sorted.bam.bai  # "
+echo "#                                                           # "
+echo "#############################################################"
 ```
-└── your-bucket
-    ├── NC_000913.3.fasta
-    └── reads
-        ├── hipa7_reads_R1.fastq
-        └── hipa7_reads_R2.fastq
-```
 
-* A [FASTA](https://genome.sph.umich.edu/wiki/FASTA) text file containing the entire DNA of Ecoli ('reference genome')
-* A FASTQ text file (FASTA plus likelihood that reads are correct) with paired-end reads ('ABCDE' and 'EDCBA') of your Ecoli sample, obtained from the MiSeq.
+Your distributed version should split the reference genome (`NC_000913.3-hipA7.fasta`) into smaller parts, and then parallelize the rest accordingly.
 
 
-
-#### Rough steps
-
-
-* Split the reference genome into smaller parts
-* Run bwa index  (parallel for each part)
-* Run bwa aln (parallel for each part)
-* Run bwa sampe (parallel for each part)
-* Run samtools merge to concat .sam files into one .sam
-* Run samtools sort to sort entries
-* Run samtools view to convert to .bam (binary .sam)
-* Run samtools index to make it searchable
-
-#### Crash course in Bioinformatics
+### Crash course in Bioinformatics
 
 DNA is the source code of organisms. It is a string of the bases `A`, `T`, `G`, `C` (analogous to `0` and `1`) that describes all traits of the organism. It is incredibly long - 2 meters and 3 billion basepairs (bits) for humans - but it is bundled up ingeniously so it fits into cells that are just 10 to 100 micrometers in diameter.
 Every cell contains an entire copy of the DNA.
@@ -174,9 +200,9 @@ We usually also have a reference DNA of that organism. This is akin to the pictu
 We know that a `C` mutation at the fourth<br> position leads to brown eyes. Now we <br>check for that by hand in the aligned DNA. | IGV (by hand)
 
 
-#### Hints
-
-This workflow is all about file management at scale. Assume that every step (`bwa index`, `bwa aln` and so on) produces new files that the next step needs.
+### Hints
+* You can at any point make `.sam` and `.bam` files much smaller by filtering out unaligned reads: `samtools view -b -F 4 file.bam/.sam > slimfile.bam/.sam`. It is idempotent.
+* This workflow is all about file management at scale. Assume that every step (`bwa index`, `bwa aln` and so on) produces new files that the next step needs.
 Furthermore, the parallel section produces files with the same name. We left you a recommendation how to handle this [in Week B](#rough-functions-1).
 
 
@@ -214,7 +240,7 @@ Make sure you can run the steps on your Laptop / PC.
 Serverless functions always see a fresh filesystem, but for `bwa` it's useful to have files persist.
 We recommend to write a simple abstraction that stashes & fetches the `tmp` folder to an S3 folder, and thus fakes continuity between functions (at least within the `ParallelFor`).
 
-#### Split `S3, Lambda Layers` `Python`
+#### Split `S3`
 
 This function should split the reference genome `NC_000913.3.fasta` into smaller parts. You can use any library, binary, or shell command you find online to split FASTQ or FASTA files.
 
@@ -235,11 +261,11 @@ Hints:
 
 This function should run `bwa sampe` (**sam**-**p**aired-**e**nd) for the `.sai` pair created in the previous step (R1 and R2). This will put the aligned reads into one `.sam` file.
 
-#### samtools merge
+#### samtools merge `S3`
 
 This function should run `samtools merge` to concat the `.sam` file of each reference genome split.
 
-#### samtools sort, view, index
+#### samtools sort, view, index `S3`
 
 This function should run `samtools sort` to sort the `.sam` file.
 Then, run `samtools view` to convert to a binary representation (`.bam` file).
@@ -247,11 +273,30 @@ Then, run `samtools index` to create an index (`.bam.bai` file).
 
 Keep the `.bam` and `.bam.bai` file for Week C.
 
+
 ## Week C (Homework 08)
 
-Investigate the results - use the Integrative Genomics Viewer to analyze the genes for antibiotic resistance.
-
 Orchestrate the functions with the Enactment Engine to run the functions automatically.
+
+
+### Investigate with IGV
+
+>In Escherichia coli an increased frequency of persisters (...) is conferred by [two point] mutations in the **hipA gene**, which encodes the toxin entity of the toxin-antitoxin module hipBA. [Korch S.B., Hill T.M.](https://www.uniprot.org/citations/16707675)
+
+
+The mutations are one `G` to `A`, and one `A` to `C` respectively. If they are there, they can be found at the left end of the gene.
+
+
+1. Download and start the [Integrative Genomics Viewer](https://software.broadinstitute.org/software/igv/download).
+1. Select the Ecoli reference genome (`NC_000913.3`) (Marker 1)
+1. Import your alignments with File > Load from file > Your `.bam` file (produced either by the script, or the workflow)
+1. Jump to the `hipA` gene (Marker 2, Marker 5)
+
+You can see your reads as grey bars in Marker 4. The arrow tips indicate read direction. A letter means the read is different to the reference genome in that spot. The more reads agree on a difference, the more confident you can be it is not just noise.
+
+Check your sample for these two mutations. Is your Ecoli sample resistant to antibiotics?
+
+<img src="https://i.imgur.com/M6ST698.png" />
 
 ----
 
@@ -281,7 +326,6 @@ This should be done in parallel, per stock. The result should be visualised toge
 ### Rough steps
 
 * Pull commodity prices to S3
-* Enter them into AWS Forecast
 * Forecast for the coming year for each commodity
 * Create a chart showing the past and future price of all commodities.
 
@@ -320,17 +364,14 @@ You may have to do some processing, such as stripping unnecessary fields. It is 
 Hints:
 * If you need an indicator of the market sentiment at that time, [this may help](https://raw.githubusercontent.com/qngapparat/sentim/master/python/qmarketin500.csv).
 
-#### Enter into Forecast `S3, Forecast`
+#### Forecast (updated) `S3` `Python`
 
-Enter the historical data for given commodity into AWS Forecast.
+Use a library or local algorithm to forecast the price of given commodity. You can use any library for time series prediction. For Python, [statsmodels](https://www.statsmodels.org/stable/index.html) and [prophet by Facebook](https://facebook.github.io/prophet/) are great.
 
-#### Start `S3, Forecast`
+Hints:
+* You can choose any algorithm, but some may be better suited for stocks.
+* prophet is large and one-size-fits-most, while statsmodels is small and more configurable.
 
-Start the forecast for given commidity, and move the results to a file on S3.
-
-<!--Hints:
-* Since you will be generating JavaScript code, it's useful to code this function in NodeJS
--->
 #### Process result `S3`
 
 Fetch the result file for given commodity from S3 and prepare it for visualisation. Strip fields that you aren't interested in. Save it in a way that's easy to read for the following step.
