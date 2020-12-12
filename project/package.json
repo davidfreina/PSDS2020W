@@ -1,0 +1,23 @@
+{
+  "name": "object_recognition",
+  "version": "1.0.0",
+  "description": "This project executes object recognition of dogs and children on given .mp4 files and was part of PS Distributed Systems 2020",
+  "main": "index.js",
+  "dependencies": {
+    "make": "^0.8.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidfreina/PSDS2020W.git"
+  },
+  "author": "Mathias Thöni, David Freina",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/davidfreina/PSDS2020W/issues"
+  },
+  "homepage": "https://github.com/davidfreina/PSDS2020W#readme"
+}
