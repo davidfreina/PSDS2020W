@@ -8,6 +8,7 @@ exports.handler = async (event, context) => {
   var splitFolderName = event["split_folder_name"];
   var s3 = new AWS.S3();
   var input = null;
+  var retVals = {};
 
   let params = {
     Bucket: bucketId,
@@ -15,30 +16,36 @@ exports.handler = async (event, context) => {
     Prefix: videoName + "/" + splitFolderName + "/",
   };
 
-  s3.listObjectsV2(params, (err, data) => {
-    if (err) console.log(err, err.stack);
-    else {
-      input = data["Contents"];
-      for (var element in input) {
-        console.log(input[element]["Key"]);
-        detectDogsAndChildren(
-          rekognition,
-          bucketId,
-          input[element]["Key"],
-          ret
-        );
-        //getTime(rekognition, bucketId, input[element]['Key'], ret);
+  let promise = new Promise((resolve, reject) => {
+    s3.listObjectsV2(params, (err, data) => {
+      if (err) console.log(err, err.stack);
+      else {
+        input = data["Contents"];
+        for (element in input) {
+          console.log(input[element]["Key"]);
+
+          retVals[imageSource] = detectDogsAndChildren(
+            rekognition,
+            bucketId,
+            input[element]["Key"],
+            ret
+          );
+          //getTime(rekognition, bucketId, input[element]['Key'], ret);
+        }
       }
-    }
+    });
   });
 
-  function ret(data) {
-    console.log("Callback: ", data);
-  }
+  await promise;
+  const response = {
+    statusCode: 200,
+    body: JSON.stringify(retVals),
+  };
+  return response;
 };
 
 function detectDogsAndChildren(rekognition, bucketId, imageSource, callback) {
-  var retVals = { Image: imageSource, Dog: false, Child: false };
+  var retVals = { Dog: false, Child: false };
   var params = {
     Image: {
       S3Object: {
@@ -62,7 +69,7 @@ function detectDogsAndChildren(rekognition, bucketId, imageSource, callback) {
           retVals["Child"] = true;
         }
       }
-      return callback(retVals);
+      return retVals;
     }
   });
 }
