@@ -9,6 +9,8 @@ easy to use and should be cross-platfrom compatible. Furthermore we thought that
 it should be really easy in comparison to upload zip-Files which then have to be
 used as layers somehow.
 
+We switch for extract_frames and analyze_frames from node.js to python because the OpenCV implementation for node.js was really unusable for us. We tried several node.js packages and the official usage tutorial from the OpenCV documentation but we failed with every approach. After trying for half a day we decided to switch to python.
+
 ## Functions
 
 ### video_links
