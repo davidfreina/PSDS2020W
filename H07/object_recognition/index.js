@@ -12,18 +12,18 @@ AWS.config.getCredentials(function(err) {
 
 console.log("Region: ", AWS.config.region);
 
+detectDogsAndChildren(null, function(ret){
+    console.log(ret);
+});
 
-
-detectDogsAndChildren(null);
-
-function detectDogsAndChildren(imageData) {
+function detectDogsAndChildren(imageData, callback) {
     var rekognition = new AWS.Rekognition();
-    var ret_vals = {};
+    var ret_vals = {'Dog': false, 'Child': false};
     var params = {
         Image: {
             S3Object: {
                 Bucket: "videobucketthoenifreina",
-                Name: "1603376072/split5/frame504.jpg"
+                Name: "1603377206/split1/dog.jpg"
             }
         },
         MinConfidence: 85
@@ -40,6 +40,7 @@ function detectDogsAndChildren(imageData) {
                     ret_vals['Dog'] = true;
                 }
             }
+            return callback(ret_vals);
         }
     });
 }

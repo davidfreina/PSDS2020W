@@ -1,7 +1,7 @@
-from os import spawnve
 import cv2
 import boto3
 import re
+import math
 
 def handler_function(event, context):
 
@@ -19,13 +19,17 @@ def handler_function(event, context):
     ret_links = []
 
     vidcap = cv2.VideoCapture(file)
-    half_fps = int(vidcap.get(cv2.CAP_PROP_FPS)/2)
+    fps = math.floor(vidcap.get(cv2.CAP_PROP_FPS)/2) #frame rate
 
-    print("Extracting every " + str(half_fps) + " frames")
-
+    print("Totel number of frames: %d" % vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
+    print("Extracting every " + str(fps) + " frames")
+    
     success, image = vidcap.read()
     count, foldercount, images_of_current_folder = 0, 0, 0
     while success:
+
+        frame_id = vidcap.get(cv2.CAP_PROP_POS_FRAMES) #current frame number
+        # print(frame_id)
 
         # Split frames to analyze into subfolders
         if images_of_current_folder == 0 or images_of_current_folder >= numberOfFramesToAnalyzePerInstance:
@@ -37,16 +41,14 @@ def handler_function(event, context):
                 save_image(last_image, file_name, s3)
                 images_of_current_folder += 1
             ret_links.append(link + folder + "/" + subfolder)
-            
-    
 
         # Extract a frame every 0.5 seconds using the FPS number
-        if count % half_fps == 0:
-            image_name = "frame%d.jpg" % count
-
+        if frame_id % fps == 1:
+            image_name = "frame%d.jpg" % frame_id
             file_name = folder + "/" + subfolder + "/" + image_name
-
             last_image = save_image(image, file_name, s3)
+            print("Extracted frame %d" % frame_id)
+
             images_of_current_folder += 1
 
         # Read next frame
@@ -70,4 +72,4 @@ def save_image(image_data, file_name, s3):
 
 
 if __name__ == "__main__":
-    handler_function({"file": "https://videobucketthoenifreina.s3.amazonaws.com/1603376072.mp4", "numberOfFramesToAnalyzePerInstance": 10}, None)
+    handler_function({"file": "https://videobucketthoenifreina.s3.amazonaws.com/1603377206.mp4", "numberOfFramesToAnalyzePerInstance": 10}, None)
