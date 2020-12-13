@@ -19,7 +19,7 @@ exports.handler = async (event, context) => {
     if (err) console.log(err, err.stack);
     else {
       input = data["Contents"];
-      for (element in input) {
+      for (var element in input) {
         console.log(input[element]["Key"]);
         detectDogsAndChildren(
           rekognition,
@@ -52,7 +52,7 @@ function detectDogsAndChildren(rekognition, bucketId, imageSource, callback) {
     if (err) {
       console.log(err, err.stack);
     } else {
-      for (label in data["Labels"]) {
+      for (var label in data["Labels"]) {
         //console.log(data['Labels'][label]);
         currLabel = data["Labels"][label];
         if (currLabel["Name"] == "Dog") {
