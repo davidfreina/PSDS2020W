@@ -1,96 +1,60 @@
 var AWS = require('aws-sdk');
 
-exports.handler = async (event, context) => {
-  // {'video_bucket_id': video_bucket_id, 'video_name': video_name,
-  // 'split_folder_name': split_folder_name}
-  var rekognition = new AWS.Rekognition();
-  var bucketId = event['video_bucket_id'];
-  var videoName = event['video_name'];
-  var splitFolderName = event['split_folder_name'];
-  var s3 = new AWS.S3();
-  var input = null;
-  var retVals = {};
+exports.handler = (event, context, callback) => {
+    // {'video_bucket_id': video_bucket_id, 'video_name': video_name,
+    // 'split_folder_name': split_folder_name}
+    var rekognition = new AWS.Rekognition();
+    var bucketId = event['video_bucket_id'];
+    var videoName = event['video_name'];
+    var splitFolderName = event['split_folder_name'];
+    var s3 = new AWS.S3();
+    var input = null;
+    var retVals = {};
 
-  let params = {
-    Bucket: bucketId,
-    Delimiter: '/',
-    Prefix: videoName + '/' + splitFolderName + '/',
-  };
+    let params = {
+        Bucket: bucketId,
+        Delimiter: '/',
+        Prefix: videoName + '/' + splitFolderName + '/',
+    };
 
-  let promise = new Promise((resolve, reject) => {
-    s3.listObjectsV2(params, (err, data) => {
-      if (err)
-        console.log(err, err.stack);
-      else {
-        input = data['Contents'];
-        for (element in input) {
-          console.log(input[element]['Key']);
+    var promises = [];
 
-          retVals[input[element]['Key']] = detectDogsAndChildren(
-              rekognition, bucketId, input[element]['Key']);
-          // getTime(rekognition, bucketId, input[element]['Key'], ret);
+    s3.listObjectsV2(params, function(err, data) {
+        if(err){
+            console.log(err);
+        } else {
+            input = data['Contents'];
+            for (var element in input) {
+                var params = {
+                    Image: {
+                        S3Object: {
+                            Bucket: bucketId,
+                            Name: input[element]['Key'],
+                        },
+                    },
+                    MinConfidence: 85,
+                };
+                promises.push(rekognition.detectLabels(params).promise());
+            }
         }
-      }
+        Promise.all(promises).then(function(values) {
+            for (var value in values) {
+                var retVal = {
+                    Dog: false,
+                    Child: false
+                };
+                for (var label in values[value]['Labels']) {
+                    currLabel = values[value]['Labels'][label];
+                    if (currLabel['Name'] == 'Dog') {
+                        retVal['Dog'] = true;
+                    }
+                    if (currLabel['Name'] == 'Human') {
+                        retVal['Child'] = true;
+                    }
+                }
+                retVals[input[value]['Key']] = retVal;
+            }
+            return callback(null, retVals);
+        });
     });
-  });
-
-  await promise;
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify(retVals),
-  };
-  return response;
 };
-
-function detectDogsAndChildren(rekognition, bucketId, imageSource, callback) {
-  var retVals = {Dog: false, Child: false};
-  var params = {
-    Image: {
-      S3Object: {
-        Bucket: bucketId,
-        Name: imageSource,
-      },
-    },
-    MinConfidence: 85,
-  };
-  let promise = new Promise((resolve, reject) => {
-    rekognition.detectLabels(params, function(err, data) {
-      if (err) {
-        console.log(err, err.stack);
-      } else {
-        for (label in data['Labels']) {
-          // console.log(data['Labels'][label]);
-          currLabel = data['Labels'][label];
-          if (currLabel['Name'] == 'Dog') {
-            retVals['Dog'] = true;
-          }
-          if (currLabel['Name'] == 'Human') {
-            retVals['Child'] = true;
-          }
-        }
-      }
-    });
-  });
-
-  await promise;
-  return retVals;
-}
-
-function getTime(rekognition, bucketId, imageSource, callback) {
-  params = {
-    Image: {
-      S3Object: {
-        Bucket: bucketId,
-        Name: imageSource,
-      },
-    },
-  };
-
-  rekognition.detectText(params, function(err, data) {
-    if (err) {
-      console.log(err, err.stack);
-    } else {
-      return callback(data);
-    }
-  });
-}
