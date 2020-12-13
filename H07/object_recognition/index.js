@@ -18,6 +18,7 @@ detectDogsAndChildren(null);
 
 function detectDogsAndChildren(imageData) {
     var rekognition = new AWS.Rekognition();
+    var ret_vals = {};
     var params = {
         Image: {
             S3Object: {
@@ -35,7 +36,9 @@ function detectDogsAndChildren(imageData) {
             for (label in data['Labels']){
                 console.log(data['Labels'][label]);
                 currLabel = data['Labels'][label];
-                //if(currLabel['Name'] == '')
+                if(currLabel['Name'] == 'Dog'){
+                    ret_vals['Dog'] = true;
+                }
             }
         }
     });
