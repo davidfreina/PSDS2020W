@@ -69,7 +69,8 @@ def analyze_frames(subfolder_link, frame_names_sorted):
 
 
 def remove_frames_from_bucket(video_bucket_id, video_name, split_folder_name, frame_differences, frame_names_sorted, s3):
-    """This function gets the S3 bucket id, the name of the analyzed video and the name of the split which it should analze, the differences between the frames, the sorted frame names and the s3 object.
+    """This function gets the S3 bucket id, the name of the analyzed video and the name of the split which it should analze,
+    the differences between the frames, the sorted frame names and the s3 object.
 
     Args:
         video_bucket_id (str): ID of the S3 bucket containing the videos
@@ -79,14 +80,19 @@ def remove_frames_from_bucket(video_bucket_id, video_name, split_folder_name, fr
         frame_names_sorted (list[str]): sorted list containing the frame names in ascending order
         s3 (ServiceResource): S3 object
     """
-    print(list(zip(frame_differences, frame_names_sorted)))
-    frames_to_remove = list(filter(lambda difference_frame: difference_frame[0] > 0.85, zip(frame_differences, frame_names_sorted)))
+    frames_to_remove = list(filter(lambda difference_frame: difference_frame[0] > 0.75, zip(
+        frame_differences, frame_names_sorted)))
     if (len(frames_to_remove) > 1):
         frames_to_remove = list(zip(*frames_to_remove))[1]
-        frames_to_remove = [{'Key': video_name + '/' + split_folder_name + '/' + frame_name} for frame_name in frames_to_remove]
+        frames_to_remove = [{'Key': video_name + '/' + split_folder_name +
+                             '/' + frame_name} for frame_name in frames_to_remove]
         print(frames_to_remove)
-        res = s3.delete_objects(Bucket=video_bucket_id, Delete={"Objects": frames_to_remove})
+        res = s3.delete_objects(Bucket=video_bucket_id, Delete={
+                                "Objects": frames_to_remove})
         assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
+    else:
+        print("No frames to remove!")
+
 
 def lambda_handler(event, context):
     subfolder_link = event['subfolderLink']
@@ -98,8 +104,24 @@ def lambda_handler(event, context):
     frame_differences = analyze_frames(subfolder_link, sorted_frames)
     remove_frames_from_bucket(video_bucket_id, video_name,
                               split_folder_name, frame_differences, sorted_frames, s3)
-
+    return {'video_bucket_id': video_bucket_id, 'video_name': video_name, 'split_folder_name': split_folder_name}
 
 if __name__ == "__main__":
     lambda_handler(
-        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split0'}, 0)
+        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split1'}, 0)
+    lambda_handler(
+        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split2'}, 0)
+    lambda_handler(
+        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split3'}, 0)
+    lambda_handler(
+        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split4'}, 0)
+    lambda_handler(
+        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split5'}, 0)
+    lambda_handler(
+        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split6'}, 0)
+    lambda_handler(
+        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split7'}, 0)
+    lambda_handler(
+        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split8'}, 0)
+    lambda_handler(
+        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split9'}, 0)
