@@ -1,20 +1,6 @@
 var AWS = require("aws-sdk");
 
-AWS.config.update({region: 'us-east-1'});
-
-AWS.config.getCredentials(function(err) {
-  if (err) console.log(err.stack);
-  // credentials not loaded
-  else {
-    console.log("Access key:", AWS.config.credentials.accessKeyId);
-  }
-});
-
-test({video_bucket_id: 'videobucketthoenifreina', video_name: '1603376072', split_folder_name: 'split4'}, null);
-
-console.log("Region: ", AWS.config.region);
-
-async function test (event, context) {
+exports.handler = async (event, context) => {
 
     // {'video_bucket_id': video_bucket_id, 'video_name': video_name, 'split_folder_name': split_folder_name}
     var bucketId = event['video_bucket_id'];
@@ -37,6 +23,7 @@ async function test (event, context) {
             for(element in input){
                 console.log(input[element]['Key']);
                 detectDogsAndChildren(bucketId, input[element]['Key'], ret);
+                //getTime(bucketId, input[element]['Key'], ret);
             }
         }
     })
@@ -46,7 +33,7 @@ async function test (event, context) {
     }
 }
 
-async function detectDogsAndChildren(bucketId, imageSource, callback) {
+function detectDogsAndChildren(bucketId, imageSource, callback) {
     var rekognition = new AWS.Rekognition();
     var retVals = {'Image': imageSource, 'Dog': false, 'Child': false};
     var params = {
@@ -74,6 +61,27 @@ async function detectDogsAndChildren(bucketId, imageSource, callback) {
                 }
             }
             return callback(retVals);
+        }
+    });
+}
+
+function getTime(bucketId, imageSource, callback){
+    var rekognition = new AWS.Rekognition();
+    params = {
+        Image: {
+            S3Object: {
+                Bucket: bucketId,
+                Name: imageSource
+            }
+        }
+    }
+
+    rekognition.detectText(params, function(err, data){
+        if(err){
+            console.log(err, err.stack);
+        }
+        else{
+            return callback(data);
         }
     });
 }
