@@ -3,6 +3,7 @@ var AWS = require("aws-sdk");
 exports.handler = async (event, context) => {
 
     // {'video_bucket_id': video_bucket_id, 'video_name': video_name, 'split_folder_name': split_folder_name}
+    var rekognition = new AWS.Rekognition();
     var bucketId = event['video_bucket_id'];
     var videoName = event['video_name'];
     var splitFolderName = event['split_folder_name'];
@@ -22,8 +23,8 @@ exports.handler = async (event, context) => {
             input = data['Contents'];
             for(element in input){
                 console.log(input[element]['Key']);
-                detectDogsAndChildren(bucketId, input[element]['Key'], ret);
-                //getTime(bucketId, input[element]['Key'], ret);
+                detectDogsAndChildren(rekognition, bucketId, input[element]['Key'], ret);
+                //getTime(rekognition, bucketId, input[element]['Key'], ret);
             }
         }
     })
@@ -33,8 +34,7 @@ exports.handler = async (event, context) => {
     }
 }
 
-function detectDogsAndChildren(bucketId, imageSource, callback) {
-    var rekognition = new AWS.Rekognition();
+function detectDogsAndChildren(rekognition, bucketId, imageSource, callback) {
     var retVals = {'Image': imageSource, 'Dog': false, 'Child': false};
     var params = {
         Image: {
@@ -65,8 +65,7 @@ function detectDogsAndChildren(bucketId, imageSource, callback) {
     });
 }
 
-function getTime(bucketId, imageSource, callback){
-    var rekognition = new AWS.Rekognition();
+function getTime(rekognition, bucketId, imageSource, callback){
     params = {
         Image: {
             S3Object: {
