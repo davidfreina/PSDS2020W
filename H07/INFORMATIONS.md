@@ -27,4 +27,6 @@ This function takes one directory path from extract_frames as input. It then use
 
 This function takes the S3 bucket-id, the name of the video and the directory which it will work in as input. The images are then directly passed to AWS Rekognition which gives us the labels for the images back. After filtering them for positiv matches it returns the positively matched frames.
 
-###
+### format_detections
+
+This function takes the combined outputs of the object_recognition as input an formats it into nice strings which are then output.
