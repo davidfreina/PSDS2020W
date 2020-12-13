@@ -52,7 +52,9 @@ exports.handler = (event, context, callback) => {
                         retVal['Child'] = true;
                     }
                 }
-                retVals[input[value]['Key']] = retVal;
+                if (retVal['Child'] || retVal['Dog']){
+                    retVals[input[value]['Key']] = retVal;
+                }
             }
             return callback(null, retVals);
         });
