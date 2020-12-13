@@ -10,20 +10,50 @@ AWS.config.getCredentials(function(err) {
   }
 });
 
+test({video_bucket_id: 'videobucketthoenifreina', video_name: '1603376072', split_folder_name: 'split4'}, null);
+
 console.log("Region: ", AWS.config.region);
 
-detectDogsAndChildren(null, function(ret){
-    console.log(ret);
-});
+async function test (event, context) {
 
-function detectDogsAndChildren(imageData, callback) {
+    // {'video_bucket_id': video_bucket_id, 'video_name': video_name, 'split_folder_name': split_folder_name}
+    var bucketId = event['video_bucket_id'];
+    var videoName = event['video_name'];
+    var splitFolderName = event['split_folder_name'];
+    var s3 = new AWS.S3();
+    var input = null;
+
+    let params = {
+        Bucket: bucketId,
+        Delimiter: '/',
+        Prefix: videoName + '/' + splitFolderName + '/'
+    }
+
+    s3.listObjectsV2(params, (err, data) => {
+        if (err)
+            console.log(err, err.stack);
+        else{
+            input = data['Contents'];
+            for(element in input){
+                console.log(input[element]['Key']);
+                detectDogsAndChildren(bucketId, input[element]['Key'], ret);
+            }
+        }
+    })
+    
+    function ret(data){
+        console.log("Callback: ", data);
+    }
+}
+
+async function detectDogsAndChildren(bucketId, imageSource, callback) {
     var rekognition = new AWS.Rekognition();
-    var ret_vals = {'Dog': false, 'Child': false};
+    var retVals = {'Image': imageSource, 'Dog': false, 'Child': false};
     var params = {
         Image: {
             S3Object: {
-                Bucket: "videobucketthoenifreina",
-                Name: "1603377206/split1/dog.jpg"
+                Bucket: bucketId,
+                Name: imageSource
             }
         },
         MinConfidence: 85
@@ -34,13 +64,16 @@ function detectDogsAndChildren(imageData, callback) {
         }
         else{
             for (label in data['Labels']){
-                console.log(data['Labels'][label]);
+                //console.log(data['Labels'][label]);
                 currLabel = data['Labels'][label];
                 if(currLabel['Name'] == 'Dog'){
-                    ret_vals['Dog'] = true;
+                    retVals['Dog'] = true;
+                }
+                if(currLabel['Name'] == 'Human'){
+                    retVals['Child'] = true;
                 }
             }
-            return callback(ret_vals);
+            return callback(retVals);
         }
     });
 }

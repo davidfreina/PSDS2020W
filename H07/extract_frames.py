@@ -23,7 +23,7 @@ def handler_function(event, context):
 
     print("Totel number of frames: %d" % vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
     print("Extracting every " + str(fps) + " frames")
-    
+
     success, image = vidcap.read()
     count, foldercount, images_of_current_folder = 0, 0, 0
     while success:
