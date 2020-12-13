@@ -27,10 +27,10 @@ exports.handler = async (event, context) => {
     var am_pm = date.getHours() >= 12 ? "pm" : "am";
     var resultString = "";
     if (countChildren != 0){
-        resultString += "I recognized a child at around " + date.getHours() % 12 + ":" + date.getMinutes() + am_pm + (countChildren == 1 ? ". " : " " + countChildren + " times in a row. ");
+        resultString += "I recognized a child at around " + date.getHours() % 12 + ":" + date.getMinutes() + am_pm + (countChildren == 1 ? ". " : ", " + countChildren + " times in a row. ");
     }
     if (countDogs != 0){
-        resultString += "I recognized a dog at around " + date.getHours() % 12 + ":" + date.getMinutes() + am_pm + (countDogs == 1 ? "." : " " + countDogs + " times in a row.");
+        resultString += "I recognized a dog at around " + date.getHours() % 12 + ":" + date.getMinutes() + am_pm + (countDogs == 1 ? "." : ", " + countDogs + " times in a row.");
     }
 
     return resultString;
