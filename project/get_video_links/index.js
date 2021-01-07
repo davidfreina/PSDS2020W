@@ -20,6 +20,6 @@ exports.handler = (event, context, callback) => {
                     retVals.push(bucketUrl + video);
             }
         }
-        return callback(null, retVals);
+        return callback(null, {"numberOfVideos": retVals.length, "videoLinks": retVals});
     });
 };
