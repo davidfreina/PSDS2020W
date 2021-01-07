@@ -13,7 +13,6 @@ exports.handler = (event, context, callback) => {
         if(err){
             console.log(err);
         } else {
-            console.log(data);
             input = data['Contents'];
             var video;
             for (var element in input) {
