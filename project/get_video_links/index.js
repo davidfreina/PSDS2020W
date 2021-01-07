@@ -2,7 +2,7 @@ var AWS = require('aws-sdk');
 
 exports.handler = (event, context, callback) => {
     var s3 = new AWS.S3();
-    var videoBucketId = event['video_bucket_id'];
+    var videoBucketId = event['videoBucketId'];
     const bucketUrl = 'https://' + videoBucketId + '.s3.amazonaws.com/';
 
     let params = {Bucket: videoBucketId};
