@@ -1,0 +1,15 @@
+{
+  "name": "object_recognition",
+  "version": "1.0.0",
+  "description": "Performs object recognition on given pictures located on S3 buckets",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mathias Thöni, David Freina",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.809.0",
+    "uuid": "^8.3.2"
+  }
+}

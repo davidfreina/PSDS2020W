@@ -41,7 +41,7 @@ gradle-app.setting
 
 .idea/
 
-credentials.properties
+*/credentials.properties
 
 venv/
 

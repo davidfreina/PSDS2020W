@@ -1,0 +1,4 @@
+{
+    "videoBucketId": "INSERTIDHERE",
+    "numberOfFramesToAnalyzePerInstance": 1000
+}
