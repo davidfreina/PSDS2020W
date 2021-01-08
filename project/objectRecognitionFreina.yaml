@@ -1,9 +1,9 @@
 ---
 name: "objectRecognition"
 dataIns:
-  - name: "videoBucketId"
+  - name: "videoBucketIdFreina"
     type: "string"
-    source: "videoBucketId"
+    source: "videoBucketIdFreina"
   - name: "numberOfFramesToAnalyzePerInstance"
     type: "number"
     source: "numberOfFramesToAnalyzePerInstance"
@@ -12,9 +12,9 @@ workflowBody:
       name: "getVideoLinks"
       type: "getVideoLinksType"
       dataIns:
-        - name: "videoBucketId"
+        - name: "videoBucketIdFreina"
           type: "string"
-          source: "objectRecognition/videoBucketId"
+          source: "objectRecognition/videoBucketIdFreina"
         - name: "numberOfFramesToAnalyzePerInstance"
           type: "number"
           source: "objectRecognition/numberOfFramesToAnalyzePerInstance"
@@ -163,7 +163,7 @@ workflowBody:
                 source: "awsRekognitionParallel/analyzeFramesSplitFolderCombined"
             dataOuts:
               - name: "detections"
-                type: "collection"
+                type: "object"
             properties:
               - name: "resource"
                 value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:object_recognition"
@@ -180,7 +180,7 @@ workflowBody:
       dataIns:
         - name: "detections"
           type: "collection"
-          source: "awsRekognition/detections"
+          source: "awsRekognitionParallel/detections"
       properties:
         - name: "resource"
           value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:format_detections"
