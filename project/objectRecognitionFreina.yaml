@@ -87,6 +87,25 @@ workflowBody:
         - name: "numberOfVideos"
           type: "number"
           source: "extractFrames/numberOfVideos"
+  - function:
+      name: "analyzeFramesInputPreprocessing"
+      type: "analyzeFramesInputPreprocessingType"
+      dataIns:
+        - name: "extractedFramesSplitFoldersCombined"
+          type: "collection"
+          source: "extractFramesParallel/extractedFramesSplitFoldersCombined"
+        - name: "numberOfVideos"
+          type: "number"
+          source: "extractFramesParallel/numberOfVideos"
+          passing: true
+      properties:
+        - name: "resource"
+          value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:analyze_frames_input_preprocessing"
+      dataOuts:
+        - name: "extractedFramesSplitFoldersCombined"
+          type: "collection"
+        - name: "numberOfVideos"
+          type: "number"
   - parallelFor:
       name: "analyzeFramesParallel"
       dataIns:
