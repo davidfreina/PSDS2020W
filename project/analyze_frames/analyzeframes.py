@@ -2,11 +2,14 @@
 # https://pythonexamples.org/python-opencv-image-filter-convolution-cv2-filter2d/
 
 from re import findall
-from skimage.measure import compare_ssim
+from skimage.metrics import structural_similarity
 from skimage import io
+from os import chdir
+from tempfile import TemporaryDirectory
 import boto3
 import cv2
 import numpy as np
+
 
 
 def sort_frames(video_bucket_id, subfolder_link, s3):
@@ -39,7 +42,7 @@ def sort_frames(video_bucket_id, subfolder_link, s3):
     return frame_names_sorted, video_name, split_folder_name
 
 
-def analyze_frames(subfolder_link, frame_names_sorted):
+def analyze_frames(subfolder_link, frame_names_sorted, s3, video_bucket_id, subfolder_name):
     """This function takes the subfolder_link where the frames are stored and
     the sorted list of frames as input and returns a list containing
     the difference values between two subsequent frames.
@@ -56,14 +59,20 @@ def analyze_frames(subfolder_link, frame_names_sorted):
                        [0.0, -8.0, 0.0]])
     kernel = kernel/(np.sum(kernel) if np.sum(kernel) != 0 else 1)
 
-    images = list(map(io.imread, (subfolder_link + '/' +
-                                  frame_name for frame_name in frame_names_sorted)))
+    with TemporaryDirectory() as tmpdir:
+        chdir(tmpdir)
+        for frame in frame_names_sorted:
+            with open(frame, 'wb') as data:
+                s3.download_fileobj(video_bucket_id, subfolder_name + '/' + frame, data)
+            data.close()
+
+        images = list(map(io.imread, (frame_name for frame_name in frame_names_sorted)))
 
     image_data = list(map(lambda imageFilter: cv2.filter2D(imageFilter, -1, kernel), map(lambda imageBGR2GRAY: cv2.cvtColor(
         imageBGR2GRAY, cv2.COLOR_BGR2GRAY), map(lambda imageRGB2BGR: cv2.cvtColor(imageRGB2BGR, cv2.COLOR_RGB2BGR), images))))
     differences = []
     for i, j in zip(range(len(frame_names_sorted)), range(1, len(frame_names_sorted))):
-        differences.append(compare_ssim(
+        differences.append(structural_similarity(
             image_data[i], image_data[j], full=True))
     return [frame[0] for frame in differences]
 
@@ -101,27 +110,11 @@ def lambda_handler(event, context):
     s3 = boto3.client('s3')
     sorted_frames, video_name, split_folder_name = sort_frames(
         video_bucket_id, subfolder_link, s3)
-    frame_differences = analyze_frames(subfolder_link, sorted_frames)
+    frame_differences = analyze_frames(subfolder_link, sorted_frames, s3, video_bucket_id, video_name + '/' + split_folder_name)
     remove_frames_from_bucket(video_bucket_id, video_name,
                               split_folder_name, frame_differences, sorted_frames, s3)
     return {'analyzeFramesSplitFolder': subfolder_link}
 
 if __name__ == "__main__":
     lambda_handler(
-        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split1'}, 0)
-    lambda_handler(
-        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split2'}, 0)
-    lambda_handler(
-        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split3'}, 0)
-    lambda_handler(
-        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split4'}, 0)
-    lambda_handler(
-        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split5'}, 0)
-    lambda_handler(
-        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split6'}, 0)
-    lambda_handler(
-        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split7'}, 0)
-    lambda_handler(
-        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split8'}, 0)
-    lambda_handler(
-        {'subfolderLink': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split9'}, 0)
+        {'extractedFramesSplitFolder': 'https://videobucketfreinathoeni.s3.amazonaws.com/1603365437/split2'}, 0)
