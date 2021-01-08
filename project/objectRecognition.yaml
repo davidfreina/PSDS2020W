@@ -17,13 +17,12 @@ workflowBody:
           source: "objectRecognition/videoBucketId"
       properties:
         - name: "resource"
-          value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:getVideoLinks"
+          value: "nodejs:arn:aws:lambda:us-east-1:722672042190:function:video_links"
       dataOuts:
         - name: "videoLinks"
           type: "collection"
         - name: "numberOfVideos"
           type: "number"
-          saveto: "numberOfVideos"
   - parallelFor:
       name: "extractFramesParallel"
       dataIns:
@@ -56,26 +55,25 @@ workflowBody:
               - name: "numberOfVideos"
                 type: "number"
                 source: "extractFramesParallel/numberOfVideos"
+                passing: true
             dataOuts:
-              - name: "extractFramesSuccess"
-                type: "number"
-              - name: "extractedFramesBucket"
-                type: "string"
+              - name: "extractedFramesSplitFolders"
+                type: "collection"
               - name: "numberOfVideos"
                 type: "number"
             properties:
               - name: "resource"
                 value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:extractFrames"
       dataOuts:
-        - name: "extractFramesSuccess"
+        # - name: "extractFramesSuccess"
+        #   type: "collection"
+        #   source: "extractFrames/extractFramesSuccess"
+        #   constraints:
+        #     - name: "aggregation"
+        #       value: "+"
+        - name: "extractedFramesSplitFoldersCombined"
           type: "collection"
-          source: "extractFrames/extractFramesSuccess"
-          constraints:
-            - name: "aggregation"
-              value: "+"
-        - name: "extractedFramesBuckets"
-          type: "collection"
-          source: "extractFrames/extractedFramesBucket"
+          source: "extractFrames/extractedFramesSplitFolders"
           constraints:
             - name: "aggregation"
               value: "+"
@@ -85,9 +83,9 @@ workflowBody:
   - parallelFor:
       name: "analyzeFramesParallel"
       dataIns:
-        - name: "extractedFramesBuckets"
+        - name: "extractedFramesSplitFoldersCombined"
           type: "string"
-          source: "extractFramesParallel/extractedFramesBuckets"
+          source: "extractFramesParallel/extractedFramesSplitFoldersCombined"
           constraints:
             - name: "distribution"
               value: "BLOCK(1)"
@@ -108,32 +106,25 @@ workflowBody:
             name: "analyzeFrames"
             type: "analyzeFramesType"
             dataIns:
-              - name: "extractedFramesBucket"
+              - name: "extractedFramesSplitFolder"
                 type: "string"
-                source: "analyzeFramesParallel/extractedFramesBuckets"
+                source: "analyzeFramesParallel/extractedFramesSplitFoldersCombined"
               - name: "numberOfVideos"
                 type: "number"
                 source: "analyzeFramesParallel/numberOfVideos"
+                passing: true
             dataOuts:
-              - name: "analyzedFrameNames"
-                type: "collection"
+              - name: "analyzeFramesSplitFolder"
+                type: "string"
               - name: "numberOfVideos"
                 type: "number"
-              - name: "extractedFramesBucket"
-                type: "string"
             properties:
               - name: "resource"
                 value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:analyzeFrames"
       dataOuts:
-        - name: "analyzedFrameNamesCollection"
+        - name: "analyzeFramesSplitFolderCombined"
           type: "collection"
-          source: "analyzeFrames/analyzedFrameNames"
-          constraints:
-            - name: "aggregation"
-              value: "+"
-        - name: "extractedFramesBucketCollection"
-          type: "collection"
-          source: "analyzeFrames/extractedFramesBucket"
+          source: "analyzeFrames/analyzeFramesSplitFolder"
           constraints:
             - name: "aggregation"
               value: "+"
@@ -143,18 +134,18 @@ workflowBody:
   - parallelFor:
       name: "awsRekognitionParallel"
       dataIns:
-        - name: "analyzedFrameNamesCollection"
+        - name: "analyzeFramesSplitFolderCombined"
           type: "collection"
-          source: "analyzeFramesParallel/analyzedFrameNamesCollection"
+          source: "analyzeFramesParallel/analyzeFramesSplitFolderCombined"
           constraints:
             - name: "distribution"
               value: "BLOCK(1)"
-        - name: "extractedFramesBucketsCollection"
-          type: "collection"
-          source: "analyzeFramesParallel/extractedFramesBucketCollection"
-          constraints:
-            - name: "distribution"
-              value: "BLOCK(1)"
+        # - name: "extractedFramesBucketsCollection"
+        #   type: "collection"
+        #   source: "analyzeFramesParallel/extractedFramesBucketCollection"
+        #   constraints:
+        #     - name: "distribution"
+        #       value: "BLOCK(1)"
       loopCounter:
         name: "counter"
         type: "number"
@@ -166,15 +157,15 @@ workflowBody:
             name: "awsRekognition"
             type: "awsRekognitionType"
             dataIns:
-              - name: "analyzedFrameNamesCollection"
-                type: "collection"
-                source: "awsRekognitionParallel/analyzedFrameNamesCollection"
-              - name: "extractedFramesBucketsCollection"
-                type: "collection"
-                source: "awsRekognitionParallel/extractedFramesBucketsCollection"
-            dataOuts:
-              - name: "humanSentence"
+              - name: "analyzeFramesSplitFolder"
                 type: "string"
+                source: "awsRekognitionParallel/analyzeFramesSplitFolderCombined"
+              # - name: "extractedFramesBucketsCollection"
+              #   type: "collection"
+              #   source: "awsRekognitionParallel/extractedFramesBucketsCollection"
+            dataOuts:
+              - name: "detections"
+                type: "collection"
             properties:
               - name: "resource"
                 value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:awsRekognition"

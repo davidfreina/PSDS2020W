@@ -1,12 +1,13 @@
 var AWS = require('aws-sdk');
 
 exports.handler = (event, context, callback) => {
-    // {'video_bucket_id': video_bucket_id, 'video_name': video_name,
-    // 'split_folder_name': split_folder_name}
+    // {'analyzeFramesSplitFolder': 'https://videobucketthoenifreina.s3.amazonaws.com/1603366941/split1'}
     var rekognition = new AWS.Rekognition();
-    var bucketId = event['video_bucket_id'];
-    var videoName = event['video_name'];
-    var splitFolderName = event['split_folder_name'];
+    var analyzeFramesSplitFolder = event['analyzeFramesSplitFolder'];
+    let split = analyzeFramesSplitFolder.split("https://")[1].split("/");
+    var bucketId = split[0].split(".")[0];
+    var videoName = split[1];
+    var splitFolderName = split[2];
     var s3 = new AWS.S3();
     var input = null;
     var retVals = {};
@@ -44,7 +45,7 @@ exports.handler = (event, context, callback) => {
                     Child: false
                 };
                 for (var label in values[value]['Labels']) {
-                    currLabel = values[value]['Labels'][label];
+                    let currLabel = values[value]['Labels'][label];
                     if (currLabel['Name'] == 'Dog') {
                         retVal['Dog'] = true;
                     }
@@ -56,7 +57,7 @@ exports.handler = (event, context, callback) => {
                     retVals[input[value]['Key']] = retVal;
                 }
             }
-            return callback(null, retVals);
+            return callback(null, {"detections": retVals});
         });
     });
 };
