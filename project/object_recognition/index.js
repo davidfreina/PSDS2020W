@@ -11,6 +11,7 @@ exports.handler = (event, context, callback) => {
     var s3 = new AWS.S3();
     var input = null;
     var retVals = {};
+    var frames = [];
 
     let params = {
         Bucket: bucketId,
@@ -54,9 +55,14 @@ exports.handler = (event, context, callback) => {
                     }
                 }
                 if (retVal['Child'] || retVal['Dog']){
-                    retVals[input[value]['Key']] = retVal;
+                    //retVals[input[value]['Key']] = retVal;
+                    let frame = input[value]['Key'].split("/")[2];
+                    frames.push({frame: retVal});
                 }
             }
+
+            retVals[videoName] = {splitFolderName: frames};
+
             return callback(null, {"detections": retVals});
         });
     });

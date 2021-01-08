@@ -170,9 +170,22 @@ workflowBody:
               - name: "resource"
                 value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:awsRekognition"
       dataOuts:
-        - name: "humanSentenceCollection"
+        - name: "detections"
           type: "collection"
-          source: "awsRekognition/humanSentence"
+          source: "awsRekognition/detections"
           constraints:
             - name: "aggregation"
               value: "+"
+  - function:
+      name: "formatDetections"
+      type: "formatDetectionsType"
+      dataIns:
+        - name: "detections"
+          type: "collection"
+          source: "awsRekognition/detections"
+      properties:
+        - name: "resource"
+          value: "nodejs:arn:aws:lambda:us-east-1:722672042190:function:video_links"
+      dataOuts:
+        - name: "formattedDetections"
+          type: "collection"
