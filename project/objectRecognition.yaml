@@ -15,6 +15,10 @@ workflowBody:
         - name: "videoBucketId"
           type: "string"
           source: "objectRecognition/videoBucketId"
+        - name: "numberOfFramesToAnalyzePerInstance"
+          type: "number"
+          source: "objectRecognition/numberOfFramesToAnalyzePerInstance"
+          passing: true
       properties:
         - name: "resource"
           value: "nodejs:arn:aws:lambda:us-east-1:722672042190:function:video_links"
@@ -38,6 +42,9 @@ workflowBody:
           constraints:
             - name: "distribution"
               value: "REPLICATE(*)"
+        - name: "numberOfFramesToAnalyzePerInstance"
+          type: "number"
+          source: "getVideoLinks/numberOfFramesToAnalyzePerInstance"
       loopCounter:
         name: "counter"
         type: "number"
@@ -52,10 +59,16 @@ workflowBody:
               - name: "videoLinks"
                 type: "string"
                 source: "extractFramesParallel/videoLinks"
+              - name: "numberOfFramesToAnalyzePerInstance"
+                type: "number"
+                source: 
               - name: "numberOfVideos"
                 type: "number"
                 source: "extractFramesParallel/numberOfVideos"
                 passing: true
+              - name: "numberOfFramesToAnalyzePerInstance"
+                type: "number"
+                source: "extractFramesParallel/numberOfFramesToAnalyzePerInstance"
             dataOuts:
               - name: "extractedFramesSplitFolders"
                 type: "collection"
@@ -65,12 +78,6 @@ workflowBody:
               - name: "resource"
                 value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:extractFrames"
       dataOuts:
-        # - name: "extractFramesSuccess"
-        #   type: "collection"
-        #   source: "extractFrames/extractFramesSuccess"
-        #   constraints:
-        #     - name: "aggregation"
-        #       value: "+"
         - name: "extractedFramesSplitFoldersCombined"
           type: "collection"
           source: "extractFrames/extractedFramesSplitFolders"
@@ -84,7 +91,7 @@ workflowBody:
       name: "analyzeFramesParallel"
       dataIns:
         - name: "extractedFramesSplitFoldersCombined"
-          type: "string"
+          type: "collection"
           source: "extractFramesParallel/extractedFramesSplitFoldersCombined"
           constraints:
             - name: "distribution"
@@ -140,12 +147,6 @@ workflowBody:
           constraints:
             - name: "distribution"
               value: "BLOCK(1)"
-        # - name: "extractedFramesBucketsCollection"
-        #   type: "collection"
-        #   source: "analyzeFramesParallel/extractedFramesBucketCollection"
-        #   constraints:
-        #     - name: "distribution"
-        #       value: "BLOCK(1)"
       loopCounter:
         name: "counter"
         type: "number"
@@ -160,9 +161,6 @@ workflowBody:
               - name: "analyzeFramesSplitFolder"
                 type: "string"
                 source: "awsRekognitionParallel/analyzeFramesSplitFolderCombined"
-              # - name: "extractedFramesBucketsCollection"
-              #   type: "collection"
-              #   source: "awsRekognitionParallel/extractedFramesBucketsCollection"
             dataOuts:
               - name: "detections"
                 type: "collection"
