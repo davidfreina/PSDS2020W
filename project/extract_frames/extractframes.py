@@ -3,12 +3,14 @@ import boto3
 import re
 import math
 
+
 def handler_function(event, context):
 
     s3 = boto3.client('s3')
 
-    file = event['file']
-    numberOfFramesToAnalyzePerInstance = int(event['numberOfFramesToAnalyzePerInstance'])
+    file = event['videoLinks']
+    numberOfFramesToAnalyzePerInstance = int(
+        event['numberOfFramesToAnalyzePerInstance'])
 
     folder = re.search('[0-9]+.mp4', file).group(0).split(".mp4")[0]
     subfolder = ""
@@ -19,7 +21,7 @@ def handler_function(event, context):
     ret_links = []
 
     vidcap = cv2.VideoCapture(file)
-    fps = math.floor(vidcap.get(cv2.CAP_PROP_FPS)/2) #frame rate
+    fps = math.floor(vidcap.get(cv2.CAP_PROP_FPS)/2)  # frame rate
 
     print("Totel number of frames: %d" % vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
     print("Extracting every " + str(fps) + " frames")
@@ -28,7 +30,7 @@ def handler_function(event, context):
     count, foldercount, images_of_current_folder = 0, 0, 0
     while success:
 
-        frame_id = vidcap.get(cv2.CAP_PROP_POS_FRAMES) #current frame number
+        frame_id = vidcap.get(cv2.CAP_PROP_POS_FRAMES)  # current frame number
         # print(frame_id)
 
         # Split frames to analyze into subfolders
@@ -52,7 +54,7 @@ def handler_function(event, context):
             images_of_current_folder += 1
 
         # Read next frame
-        success,image = vidcap.read()
+        success, image = vidcap.read()
         if not success:
             print('End of file')
         count += 1
@@ -62,14 +64,17 @@ def handler_function(event, context):
 
     print(ret_links)
 
-    return ret_links
+    return {"extractedFramesSplitFolders": ret_links}
+
 
 def save_image(image_data, file_name, s3):
     image_string = cv2.imencode('.jpg', image_data)[1].tobytes()
-    s3.put_object(Bucket="videobucketthoenifreina", Key=file_name, Body=image_string, ACL='public-read-write')
+    s3.put_object(Bucket="videobucketthoenifreina", Key=file_name,
+                  Body=image_string, ACL='public-read-write')
 
     return image_data
 
 
 if __name__ == "__main__":
-    handler_function({"file": "https://videobucketthoenifreina.s3.amazonaws.com/1603377206.mp4", "numberOfFramesToAnalyzePerInstance": 10}, None)
+    handler_function({"file": "https://videobucketthoenifreina.s3.amazonaws.com/1603377206.mp4",
+                      "numberOfFramesToAnalyzePerInstance": 10}, None)

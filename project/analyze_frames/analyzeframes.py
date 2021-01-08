@@ -95,7 +95,7 @@ def remove_frames_from_bucket(video_bucket_id, video_name, split_folder_name, fr
 
 
 def lambda_handler(event, context):
-    subfolder_link = event['subfolderLink']
+    subfolder_link = event['extractedFramesSplitFolder']
     video_bucket_id = subfolder_link[subfolder_link.find(
         '/'):subfolder_link.find('.')].replace('/', '')
     s3 = boto3.client('s3')
@@ -104,7 +104,7 @@ def lambda_handler(event, context):
     frame_differences = analyze_frames(subfolder_link, sorted_frames)
     remove_frames_from_bucket(video_bucket_id, video_name,
                               split_folder_name, frame_differences, sorted_frames, s3)
-    return {'video_bucket_id': video_bucket_id, 'video_name': video_name, 'split_folder_name': split_folder_name}
+    return {'analyzeFramesSplitFolder': subfolder_link}
 
 if __name__ == "__main__":
     lambda_handler(
