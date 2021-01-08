@@ -111,13 +111,13 @@ workflowBody:
       dataIns:
         - name: "extractedFramesSplitFoldersCombined"
           type: "collection"
-          source: "extractFramesParallel/extractedFramesSplitFoldersCombined"
+          source: "analyzeFramesInputPreprocessing/extractedFramesSplitFoldersCombined"
           constraints:
             - name: "distribution"
               value: "BLOCK(1)"
         - name: "numberOfVideos"
           type: "number"
-          source: "extractFramesParallel/numberOfVideos"
+          source: "analyzeFramesInputPreprocessing/numberOfVideos"
           constraints:
             - name: "distribution"
               value: "REPLICATE(*)"
@@ -125,7 +125,7 @@ workflowBody:
         name: "counter"
         type: "number"
         from: "0"
-        to: "extractFramesParallel/numberOfVideos"
+        to: "analyzeFramesInputPreprocessing/numberOfVideos"
         step: "1"
       loopBody:
         - function:
