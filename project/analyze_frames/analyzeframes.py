@@ -56,8 +56,9 @@ def analyze_frames(subfolder_link, frame_names_sorted, s3, video_bucket_id, subf
                        [0.0, -8.0, 0.0]])
     kernel = kernel/(np.sum(kernel) if np.sum(kernel) != 0 else 1)
 
-
-    map(lambda local_image: s3.download_fileobj(video_bucket_id, subfolder_name + '/' + local_image.name.replace('/tmp/',''), local_image), map(lambda frame: open('/tmp/' + frame, 'wb'), frame_names_sorted))
+    for frame in frame_names_sorted:
+        with open('/tmp/' + frame, 'wb') as data:
+            s3.download_fileobj(video_bucket_id, subfolder_name + '/' + frame, data)
 
     images = list(map(io.imread, ('/tmp/' + frame_name for frame_name in frame_names_sorted)))
 
