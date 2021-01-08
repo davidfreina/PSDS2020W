@@ -4,9 +4,12 @@
 from re import findall
 from skimage.measure import compare_ssim
 from skimage import io
+from os import chdir
+from tempfile import TemporaryDirectory
 import boto3
 import cv2
 import numpy as np
+
 
 
 def sort_frames(video_bucket_id, subfolder_link, s3):
@@ -56,12 +59,14 @@ def analyze_frames(subfolder_link, frame_names_sorted, s3, video_bucket_id, subf
                        [0.0, -8.0, 0.0]])
     kernel = kernel/(np.sum(kernel) if np.sum(kernel) != 0 else 1)
 
-    for frame in frame_names_sorted:
-        with open('/tmp/' + frame, 'wb') as data:
-            s3.download_fileobj(video_bucket_id, subfolder_name + '/' + frame, data)
-        data.close()
+    with TemporaryDirectory() as tmpdir:
+        chdir(tmpdir)
+        for frame in frame_names_sorted:
+            with open(frame, 'wb') as data:
+                s3.download_fileobj(video_bucket_id, subfolder_name + '/' + frame, data)
+            data.close()
 
-    images = list(map(io.imread, ('/tmp/' + frame_name for frame_name in frame_names_sorted)))
+        images = list(map(io.imread, (frame_name for frame_name in frame_names_sorted)))
 
     image_data = list(map(lambda imageFilter: cv2.filter2D(imageFilter, -1, kernel), map(lambda imageBGR2GRAY: cv2.cvtColor(
         imageBGR2GRAY, cv2.COLOR_BGR2GRAY), map(lambda imageRGB2BGR: cv2.cvtColor(imageRGB2BGR, cv2.COLOR_RGB2BGR), images))))
@@ -112,4 +117,4 @@ def lambda_handler(event, context):
 
 if __name__ == "__main__":
     lambda_handler(
-        {'extractedFramesSplitFolder': 'https://videobucketfreinathoeni.s3.amazonaws.com/1603377206/split1'}, 0)
+        {'extractedFramesSplitFolder': 'https://videobucketfreinathoeni.s3.amazonaws.com/1603365437/split1'}, 0)
