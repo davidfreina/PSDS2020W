@@ -36,12 +36,6 @@ workflowBody:
           constraints:
             - name: "distribution"
               value: "BLOCK(1)"
-        - name: "numberOfVideos"
-          type: "number"
-          source: "getVideoLinks/numberOfVideos"
-          constraints:
-            - name: "distribution"
-              value: "REPLICATE(*)"
         - name: "numberOfFramesToAnalyzePerInstance"
           type: "number"
           source: "getVideoLinks/numberOfFramesToAnalyzePerInstance"
@@ -62,18 +56,12 @@ workflowBody:
               - name: "videoLinks"
                 type: "string"
                 source: "extractFramesParallel/videoLinks"
-              - name: "numberOfVideos"
-                type: "number"
-                source: "extractFramesParallel/numberOfVideos"
-                passing: true
               - name: "numberOfFramesToAnalyzePerInstance"
                 type: "number"
                 source: "extractFramesParallel/numberOfFramesToAnalyzePerInstance"
             dataOuts:
               - name: "extractedFramesSplitFolders"
                 type: "collection"
-              - name: "numberOfVideos"
-                type: "number"
             properties:
               - name: "resource"
                 value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:extract_frames"
@@ -84,9 +72,6 @@ workflowBody:
           constraints:
             - name: "aggregation"
               value: "+"
-        - name: "numberOfVideos"
-          type: "number"
-          source: "extractFrames/numberOfVideos"
   - function:
       name: "analyzeFramesInputPreprocessing"
       type: "analyzeFramesInputPreprocessingType"
@@ -94,17 +79,13 @@ workflowBody:
         - name: "extractedFramesSplitFoldersCombined"
           type: "collection"
           source: "extractFramesParallel/extractedFramesSplitFoldersCombined"
-        - name: "numberOfVideos"
-          type: "number"
-          source: "extractFramesParallel/numberOfVideos"
-          passing: true
       properties:
         - name: "resource"
           value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:analyze_frames_input_preprocessing"
       dataOuts:
         - name: "extractedFramesSplitFoldersCombined"
           type: "collection"
-        - name: "numberOfVideos"
+        - name: "extractedFramesSplitFoldersNumber"
           type: "number"
   - parallelFor:
       name: "analyzeFramesParallel"
@@ -115,9 +96,9 @@ workflowBody:
           constraints:
             - name: "distribution"
               value: "BLOCK(1)"
-        - name: "numberOfVideos"
+        - name: "extractedFramesSplitFoldersNumber"
           type: "number"
-          source: "analyzeFramesInputPreprocessing/numberOfVideos"
+          source: "analyzeFramesInputPreprocessing/extractedFramesSplitFoldersNumber"
           constraints:
             - name: "distribution"
               value: "REPLICATE(*)"
@@ -125,7 +106,7 @@ workflowBody:
         name: "counter"
         type: "number"
         from: "0"
-        to: "analyzeFramesInputPreprocessing/numberOfVideos"
+        to: "analyzeFramesInputPreprocessing/extractedFramesSplitFoldersNumber"
         step: "1"
       loopBody:
         - function:
@@ -135,14 +116,14 @@ workflowBody:
               - name: "extractedFramesSplitFolder"
                 type: "string"
                 source: "analyzeFramesParallel/extractedFramesSplitFoldersCombined"
-              - name: "numberOfVideos"
+              - name: "extractedFramesSplitFoldersNumber"
                 type: "number"
-                source: "analyzeFramesParallel/numberOfVideos"
+                source: "analyzeFramesParallel/extractedFramesSplitFoldersNumber"
                 passing: true
             dataOuts:
               - name: "analyzeFramesSplitFolder"
                 type: "string"
-              - name: "numberOfVideos"
+              - name: "extractedFramesSplitFoldersNumber"
                 type: "number"
             properties:
               - name: "resource"
@@ -154,9 +135,9 @@ workflowBody:
           constraints:
             - name: "aggregation"
               value: "+"
-        - name: "numberOfVideos"
+        - name: "extractedFramesSplitFoldersNumber"
           type: "number"
-          source: "analyzeFrames/numberOfVideos"
+          source: "analyzeFrames/extractedFramesSplitFoldersNumber"
   - parallelFor:
       name: "awsRekognitionParallel"
       dataIns:
@@ -170,7 +151,7 @@ workflowBody:
         name: "counter"
         type: "number"
         from: "0"
-        to: "analyzeFramesParallel/numberOfVideos"
+        to: "analyzeFramesParallel/extractedFramesSplitFoldersNumber"
         step: "1"
       loopBody:
         - function:
