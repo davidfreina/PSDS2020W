@@ -1,4 +1,4 @@
-scikit-image
+scikit-image==0.17.1
 opencv-python
 boto3
 numpy
