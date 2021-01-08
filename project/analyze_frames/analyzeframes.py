@@ -59,6 +59,7 @@ def analyze_frames(subfolder_link, frame_names_sorted, s3, video_bucket_id, subf
     for frame in frame_names_sorted:
         with open('/tmp/' + frame, 'wb') as data:
             s3.download_fileobj(video_bucket_id, subfolder_name + '/' + frame, data)
+        data.close()
 
     images = list(map(io.imread, ('/tmp/' + frame_name for frame_name in frame_names_sorted)))
 
