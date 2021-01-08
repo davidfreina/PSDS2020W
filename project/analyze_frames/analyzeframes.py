@@ -2,7 +2,7 @@
 # https://pythonexamples.org/python-opencv-image-filter-convolution-cv2-filter2d/
 
 from re import findall
-from skimage.measure import compare_ssim
+from skimage.metrics import structural_similarity
 from skimage import io
 from os import chdir
 from tempfile import TemporaryDirectory
@@ -72,7 +72,7 @@ def analyze_frames(subfolder_link, frame_names_sorted, s3, video_bucket_id, subf
         imageBGR2GRAY, cv2.COLOR_BGR2GRAY), map(lambda imageRGB2BGR: cv2.cvtColor(imageRGB2BGR, cv2.COLOR_RGB2BGR), images))))
     differences = []
     for i, j in zip(range(len(frame_names_sorted)), range(1, len(frame_names_sorted))):
-        differences.append(compare_ssim(
+        differences.append(structural_similarity(
             image_data[i], image_data[j], full=True))
     return [frame[0] for frame in differences]
 
@@ -117,4 +117,4 @@ def lambda_handler(event, context):
 
 if __name__ == "__main__":
     lambda_handler(
-        {'extractedFramesSplitFolder': 'https://videobucketfreinathoeni.s3.amazonaws.com/1603365437/split1'}, 0)
+        {'extractedFramesSplitFolder': 'https://videobucketfreinathoeni.s3.amazonaws.com/1603365437/split2'}, 0)
