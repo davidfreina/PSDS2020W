@@ -1,3 +1,4 @@
+const { ServerlessApplicationRepository } = require('aws-sdk');
 var AWS = require('aws-sdk');
 
 exports.handler = (event, context, callback) => {
@@ -36,12 +37,19 @@ exports.handler = (event, context, callback) => {
                     },
                     MinConfidence: 85,
                 };
+                if(element % 40 == 0){
+                    
+                }
                 promises.push(rekognition.detectLabels(params).promise());
             }
         }
         Promise.all(promises).then(function(values) {
+            var retVal = {
+                Dog: false,
+                Child: false
+            };
             for (var value in values) {
-                var retVal = {
+                retVal = {
                     Dog: false,
                     Child: false
                 };
@@ -57,13 +65,17 @@ exports.handler = (event, context, callback) => {
                 if (retVal['Child'] || retVal['Dog']){
                     //retVals[input[value]['Key']] = retVal;
                     let frame = input[value]['Key'].split("/")[2];
-                    frames.push({frame: retVal});
+                    let tmp_json = {};
+                    tmp_json[frame] = retVal;
+                    frames.push(tmp_json);
                 }
             }
 
-            retVals[videoName] = {splitFolderName: frames};
+            let tmp = {};
+            tmp[splitFolderName] = frames;
+            retVals[videoName] = tmp;
 
-            return callback(null, {"detections": retVals});
+            return callback(null, retVals);
         });
     });
 };
