@@ -1,11 +1,11 @@
 //test([{'1603377206/split1/frame0.jpg': {'Dog': false, 'Child': true}, '1603377206/split1/frame9.jpg': {'Dog': true, 'Child': true}}], null);
 
 exports.handler = async (event, context) => {
-    var countDogs = 0;
-    var countChildren = 0;
     var input = event['preprocessedDetections'];
 
     for(var video in input){
+        var countDogs = 0;
+        var countChildren = 0;
         var videoName = input[video]['video'];
         let unixTimestamp = parseInt(videoName.split(".")[0]);
         var milliseconds = unixTimestamp * 1000;
@@ -28,5 +28,5 @@ exports.handler = async (event, context) => {
     }
     
 
-    return resultString;
+    return callback(null, resultString);
 }

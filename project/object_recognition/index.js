@@ -37,9 +37,6 @@ exports.handler = (event, context, callback) => {
                     },
                     MinConfidence: 85,
                 };
-                if(element % 40 == 0){
-                    
-                }
                 promises.push(rekognition.detectLabels(params).promise());
             }
         }

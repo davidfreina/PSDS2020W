@@ -140,6 +140,9 @@ workflowBody:
           source: "analyzeFrames/extractedFramesSplitFoldersNumber"
   - parallelFor:
       name: "awsRekognitionParallel"
+      constraints:
+        - name: "concurrency"
+          value: "50"
       dataIns:
         - name: "analyzeFramesSplitFolderCombined"
           type: "collection"
@@ -174,9 +177,10 @@ workflowBody:
           constraints:
             - name: "aggregation"
               value: "+"
+
   - function:
-      name: "formatDetections"
-      type: "formatDetectionsType"
+      name: "formatDetectionsInputPreprocessing"
+      type: "formatDetectionsInputPreprocessingType"
       dataIns:
         - name: "detections"
           type: "collection"
@@ -185,5 +189,22 @@ workflowBody:
         - name: "resource"
           value: "nodejs:arn:aws:lambda:us-east-1:722672042190:function:format_detections"
       dataOuts:
+        - name: "preprocessedDetections"
+          type: "object"
+
+  - function:
+      name: "formatDetections"
+      type: "formatDetectionsType"
+      dataIns:
+        - name: "preprocessedDetections"
+          type: "object"
+          source: "formatDetectionsInputPreprocessing/preprocessedDetections"
+      properties:
+        - name: "resource"
+          value: "nodejs:arn:aws:lambda:us-east-1:722672042190:function:format_detections"
+      dataOuts:
         - name: "formattedDetections"
-          type: "collection"
+          type: "string"
+dataOuts:
+  - name: "formattedDetections"
+    type: "string"
