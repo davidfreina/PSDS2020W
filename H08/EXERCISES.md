@@ -2,7 +2,7 @@
 
 ## Exercise 1
 
-### b.)
+### 1b.)
 
 Due to Redis being very memory and CPU bound we think it would be best to use a memory-optimized instance ([1](https://redislabs.com/blog/5-tips-for-running-redis-over-aws/), [2](https://levelup.gitconnected.com/what-a-redis-migration-taught-us-about-burstable-ec2-instances-508990b002b3)). For this we think the R5B instance type from EC2 would be the right fit. Especially the r5b.xlarge because it should provide enough memory and CPU power for Redis. But due to our accounts being very restricted we can only use instances from the following types:
 
@@ -14,7 +14,7 @@ Another remark is that we specifically chose a HVM-virtualized image because tha
 
 ## Exercise 2
 
-### a.)
+### 2a.)
 
 The values display should tell us how many of the given operations the Redis server can handle per second.
 
@@ -38,11 +38,11 @@ The values display should tell us how many of the given operations the Redis ser
   * LRANGE_600:return first 600 elements stored in list at ````key````
   * MSET: set given ````keys```` to respective ````values````, atomic operation
 
-### b.)
+### 2b.)
 
 We launched ten different instances to compare their performances.
 
-### c.)
+### 2c.)
 
 Our initial thoughts checked out and we were able to get much better performance by using m5.2xlarge. But after playing around a bit we found the c5.large to be even faster because it is a compute-optimized instance type. Strangely enough the c5.xlarge performed worse than the c5.large. We cannot explain that behaviour. We saw that also with the m5 instance types because the m5.xlarge, our overall best instance, was better than the m5.2xlarge.
 
@@ -51,7 +51,7 @@ see [MEASUREMENTS.md](MEASUREMENTS.md#Exercise2)
 ## Exercise 3
 
 * 100.000
-* Our names were not included. Adelheide Widdoes: 30.62
+* Our names were not included. ````Adelheide Widdoes: 30.62````
 * ````set "David Freina" 69.69````, ````set "Mathias Thoeni" 69.69````
-* ```KEYS David*``` see [MEASUREMENTS.md](MEASUREMENTS.md#Exercise3)
-* No it is not easy because the database is built like a hash map where you can only easily access the keys but not the values. You would have to get every entry and then filter them by value
+* ```KEYS David*```. See [MEASUREMENTS.md](MEASUREMENTS.md#Exercise3) for output
+* No, it is not easy because the database is built like a hash map where you can only easily access the keys but not the values. You would have to get every entry and then filter them by value
