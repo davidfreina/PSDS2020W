@@ -12,8 +12,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * Fill in your code into the main method of this class.
- *
  * @author David Freina
  * @author Mathias Thoeni
  */
