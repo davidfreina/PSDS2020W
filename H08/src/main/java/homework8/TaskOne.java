@@ -25,9 +25,8 @@ public class TaskOne {
 	static final String KEY_NAME = "thoeni-freina-key-task8";
 	static final String KEY_PATH = KEY_NAME + ".pem";
 	static final String REDIS_PASSWORD = "6<v2*%S+!Jr{Wn6ZEqEwJCp,:UZk&!";
-	static final String[] COMMANDS = {"ls", "sudo yum -y update", "sudo yum install -y gcc make tcl", "sudo yum groupinstall -y \"Development Tools\"", "cd /usr/local/src && sudo wget https://download.redis.io/releases/redis-6.0.9.tar.gz", "sudo tar xzf redis-6.0.9.tar.gz", "cd redis-6.0.9",
-	"sudo make", "sudo cp src/redis-server /usr/local/bin/", "sudo cp src/redis-cli /usr/local/bin/", "echo \"port 6379\nrequirepass " + REDIS_PASSWORD + "\" >> /home/ec2-user/redis-server.cfg",
-	"sudo chown ec2-user:ec2-user /home/ec2-user/redis-server.cfg", "sudo chmod +x /home/ec2-user/redis-server.cfg", "/usr/local/bin/redis-server /home/ec2-user/redis-server.cfg",};
+	static final String[] COMMANDS = {"sudo yum -y update", "sudo yum install -y gcc make tcl", "sudo yum groupinstall -y \"Development Tools\"", "cd /usr/local/src && sudo wget https://download.redis.io/releases/redis-6.0.9.tar.gz", "cd /usr/local/src && sudo tar xzf redis-6.0.9.tar.gz", "cd /usr/local/src/redis-6.0.9 && sudo make", "cd /usr/local/src/redis-6.0.9 && sudo cp src/redis-server /usr/local/bin/ && sudo cp src/redis-cli /usr/local/bin/ && sudo cp src/redis-benchmark /usr/local/bin/", "echo \"port 6379\nrequirepass " + REDIS_PASSWORD + "\" >> /home/ec2-user/redis-server.cfg",
+	"sudo chown ec2-user:ec2-user /home/ec2-user/redis-server.cfg", "sudo chmod +x /home/ec2-user/redis-server.cfg", "nohup /usr/local/bin/redis-server /home/ec2-user/redis-server.cfg > /dev/null 2>&1 &"};
 
 
 	public static void main(String[] args) {
@@ -72,8 +71,13 @@ public class TaskOne {
 		logger.info("Getting Instance IPs...");
 
 		String instanceIp = AWSUtils.getInstanceIps(amazonEC2Client, instanceIds).get(0);
+		String instancePrivateIp = AWSUtils.getPrivateInstanceIp(amazonEC2Client, instanceIds).get(0);
+		String instancePrivateDNS = AWSUtils.getPrivateDNS(amazonEC2Client, instanceIds).get(0);
+		String instancePublicDNS = AWSUtils.getPublicDNS(amazonEC2Client, instanceIds).get(0);
 
 		installRedis(instanceIp, COMMANDS);
+
+		logger.info("Statistics: \n\tPublic IP: " + instanceIp + "\n\tPrivate IP: " + instancePrivateIp + "\n\tPublic DNS: " + instancePublicDNS + "\n\tPrivate DNS: " +instancePrivateDNS);
 
 //		logger.info("Waiting for instances to change state to terminated...");
 //		AWSUtils.terminateInstances(amazonEC2Client, instanceIds);
