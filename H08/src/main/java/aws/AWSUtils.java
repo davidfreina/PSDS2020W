@@ -259,7 +259,7 @@ public class AWSUtils {
 
         RunInstancesRequest runInstancesRequest = new RunInstancesRequest();
         runInstancesRequest.withImageId("ami-0947d2ba12ee1ff75")
-                .withInstanceType(InstanceType.T2Micro)
+                .withInstanceType(InstanceType.M52xlarge)
                 .withMinCount(minCount)
                 .withMaxCount(maxCount)
                 .withKeyName(keyName)
@@ -284,5 +284,20 @@ public class AWSUtils {
 
     public static void waitForInstanceRunning(AmazonEC2Client amazonEC2Client, List<String> instanceIds){
         amazonEC2Client.waiters().instanceRunning().run(new WaiterParameters<>(new DescribeInstancesRequest().withInstanceIds(instanceIds)));
+    }
+
+    public static List<String> getPrivateInstanceIp(AmazonEC2Client amazonEC2Client, List<String> instanceIds){
+        DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest().withInstanceIds(instanceIds);
+        return amazonEC2Client.describeInstances(describeInstancesRequest).getReservations().stream().map(Reservation::getInstances).flatMap(List::stream).map(Instance::getPrivateIpAddress).collect(Collectors.toList());
+    }
+
+    public static List<String> getPrivateDNS(AmazonEC2Client amazonEC2Client, List<String> instanceIds){
+        DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest().withInstanceIds(instanceIds);
+        return amazonEC2Client.describeInstances(describeInstancesRequest).getReservations().stream().map(Reservation::getInstances).flatMap(List::stream).map(Instance::getPrivateDnsName).collect(Collectors.toList());
+    }
+
+    public static List<String> getPublicDNS(AmazonEC2Client amazonEC2Client, List<String> instanceIds){
+        DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest().withInstanceIds(instanceIds);
+        return amazonEC2Client.describeInstances(describeInstancesRequest).getReservations().stream().map(Reservation::getInstances).flatMap(List::stream).map(Instance::getPublicDnsName).collect(Collectors.toList());
     }
 }
