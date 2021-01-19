@@ -54,3 +54,8 @@ node_modules/
 frames/
 
 videos/
+
+.classpath
+.project
+org.eclipse.buildship.core.prefs
+org.eclipse.jdt.core.prefs
