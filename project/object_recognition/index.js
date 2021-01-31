@@ -28,7 +28,7 @@ exports.handler = (event, context, callback) => {
         } else {
             input = data['Contents'];
             for (var element in input) {
-                var params = {
+                var paramsLabels = {
                     Image: {
                         S3Object: {
                             Bucket: bucketId,
@@ -37,7 +37,19 @@ exports.handler = (event, context, callback) => {
                     },
                     MinConfidence: 85,
                 };
-                promises.push(rekognition.detectLabels(params).promise());
+                var paramsFaces = {
+                    Image: {
+                        S3Object: {
+                            Bucket: bucketId,
+                            Name: input[element]['Key'],
+                        }
+                    },
+                    Attributes: [
+                        'ALL',
+                    ]
+                };
+                promises.push(rekognition.detectLabels(paramsLabels).promise());
+                promises.push(rekognition.detectFaces(paramsFaces).promise());
             }
         }
         Promise.all(promises).then(function(values) {
@@ -50,13 +62,20 @@ exports.handler = (event, context, callback) => {
                     Dog: false,
                     Child: false
                 };
-                for (var label in values[value]['Labels']) {
-                    let currLabel = values[value]['Labels'][label];
-                    if (currLabel['Name'] == 'Dog') {
-                        retVal['Dog'] = true;
+                if (values[value]['Labels'] == undefined){
+                    for (var i = 0; i < values[value].FaceDetails.length; i++) {
+                        console.log(values[value].FaceDetails[i].AgeRange);
+                        if (values[value].FaceDetails[i].AgeRange.Low <= 14) {
+                            retVal['Child'] = true;
+                        }
                     }
-                    if (currLabel['Name'] == 'Human') {
-                        retVal['Child'] = true;
+                }
+                else{
+                    for (var label in values[value]['Labels']) {
+                        let currLabel = values[value]['Labels'][label];
+                        if (currLabel['Name'] == 'Dog') {
+                            retVal['Dog'] = true;
+                        }
                     }
                 }
                 if (retVal['Child'] || retVal['Dog']){

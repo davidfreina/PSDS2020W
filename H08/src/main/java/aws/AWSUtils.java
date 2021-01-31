@@ -133,7 +133,7 @@ public class AWSUtils {
                 if (channelExec.getExitStatus() != 0 && counter < 10) {
                     sendSSHCommandToInstance(instanceIp, keyFingerprint, command, ++counter);
                 } else if (channelExec.getExitStatus() != 0) {
-                    throw new SendCommandException("Could not send Command to instance after 10 retries");
+                    throw new SendCommandException("Could not send command to instance after 10 retries");
                 }
             } else {
                 channelExec.sendSignal("2");
@@ -167,6 +167,10 @@ public class AWSUtils {
             channelSftp.connect();
 
             channelSftp.put(fileInputStream, destinationPath);
+
+            logger.info("Successfully uploaded file " + sourcePath);
+
+            channelSftp.disconnect();
         } catch (NullPointerException e) {
             logger.severe("Error!");
             e.printStackTrace();
@@ -259,7 +263,7 @@ public class AWSUtils {
 
         RunInstancesRequest runInstancesRequest = new RunInstancesRequest();
         runInstancesRequest.withImageId("ami-0947d2ba12ee1ff75")
-                .withInstanceType(InstanceType.M52xlarge)
+                .withInstanceType(InstanceType.T2Micro)
                 .withMinCount(minCount)
                 .withMaxCount(maxCount)
                 .withKeyName(keyName)
