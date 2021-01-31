@@ -14,7 +14,7 @@ repositories {
   mavenCentral()
 }
 
-mainClassName = 'homework3.TaskThree'
+mainClassName = 'homework8.TaskOne'
 
 dependencies {
   // the AWS Java SDK
