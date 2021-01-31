@@ -12,6 +12,10 @@ The objectRecognitionInput.json file has two parameters which are configurable. 
 
 ## Deployment
 
+### xAFCL
+
+The xAFCL.jar has to be copied in the project directory.
+
 ### Node.js functions
 
 The Node.js functions should simply be uploaded as separated AWS Lambda functions. All of them should have 128MB memory and 30 seconds execution time.
