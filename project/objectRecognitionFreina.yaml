@@ -178,18 +178,18 @@ workflowBody:
             - name: "aggregation"
               value: "+"
   - function:
-        name: "formatDetectionsInputPreprocessing"
-        type: "formatDetectionsInputPreprocessingType"
-        dataIns:
-          - name: "detections"
-            type: "collection"
-            source: "awsRekognitionParallel/detections"
-        properties:
-          - name: "resource"
-            value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:format_detections_input_preprocessing"
-        dataOuts:
-          - name: "preprocessedDetections"
-            type: "object"
+      name: "formatDetectionsInputPreprocessing"
+      type: "formatDetectionsInputPreprocessingType"
+      dataIns:
+        - name: "detections"
+          type: "collection"
+          source: "awsRekognitionParallel/detections"
+      properties:
+        - name: "resource"
+          value: "nodejs:arn:aws:lambda:us-east-1:778033607199:function:format_detections_input_preprocessing"
+      dataOuts:
+        - name: "preprocessedDetections"
+          type: "object"
   - function:
       name: "formatDetections"
       type: "formatDetectionsType"
@@ -203,3 +203,7 @@ workflowBody:
       dataOuts:
         - name: "formattedDetections"
           type: "string"
+dataOuts:
+  - name: "formattedDetections"
+    type: "string"
+    source: "formatDetections/formattedDetections"
