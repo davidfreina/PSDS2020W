@@ -1,5 +1,4 @@
 {
     "videoBucketId": "INSERTIDHERE",
-    "videoBucketIdFreina": "videobucketfreinathoeni",
-    "numberOfFramesToAnalyzePerInstance": 100
+    "numberOfFramesToAnalyzePerInstance": 10
 }
