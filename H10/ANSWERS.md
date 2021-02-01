@@ -1,5 +1,9 @@
 # Homework 10
 
+## Team
+
+David Freina, 11829022
+Mathias Thöni, 11835136
 ## a) Which packet types does Redis use to exchange information between nodes?
 
 - Redis nodes are connected using a TCP bus and the *Redis Cluster Bus* binary protocol
